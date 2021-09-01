@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>    
+<head>
+    <meta charset = "utf-8">
+    <meta name = "viewport" content = "width=device-width, initial-scale=1.0">
+    <!-- Chrome, Firefox OS and Opera -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=476mA4zprB">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=476mA4zprB">
+    <link rel="shortcut icon" href="/favicon.ico?v=476mA4zprB">
+    <!-- Tab Color iOS Safari -->
+    <meta name="apple-mobile-web-app-title" content="Metrici.ro">
+    <meta name="application-name" content="Metrici.ro">
+    <!-- Tab Color Android Chrome -->
+    <meta name="theme-color" content="#e11422">
+    <link rel = "stylesheet" type = "text/css" href = "newMaster.css">   
+    <title>Create User</title>
+</head>
+
+<body>
+    <div class="logo_container"> <img url="/logo.png">
+        <span class = "version">Metrici Multi-Controller</br>Version: %PH_Version%</span>
+    </div>
+    <div class="center_box">
+        <div class = "box_head">
+            <div class = "title"><h1>Setup - User</h1></div>
+        </div>
+        <form method = "post">
+            <div class ="input_row">            
+                <input type="text" class="input_text" id="username" placeholder="Username" name="userName" value="" pattern=".{5,30}" title="Enter between 5 and 30 characters">
+                <label class="label_" for="username">Username:</label>
+            </div>        
+            <div class="input_row">            
+                <input type="password" class="input_text" id="userPassword" placeholder="Password" name="userPassword" value="" pattern=".{8,63}" title="Enter between 8 and 63 characters">
+                <label class="label_" for="userPassword">Password:</label>
+            </div>
+            <input class = "button" type="submit" name="register" value="Save" >
+            <input class = "button" type="submit" name="skip" value="Skip" title = "Proceed to IP Configuration page">
+            <input class = "button" type="submit" name="import" value="Import Data" title = "Click here to upload config files">
+        </form>
+    </div>
+</body>      
+</html>

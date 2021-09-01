@@ -1,0 +1,96 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset = "utf-8">
+    <meta name = "viewport" content = "width=device-width, initial-scale=1.0">
+    <!-- Chrome, Firefox OS and Opera -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=476mA4zprB">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=476mA4zprB">
+    <link rel="shortcut icon" href="/favicon.ico?v=476mA4zprB">
+    <!-- Tab Color iOS Safari -->
+    <meta name="apple-mobile-web-app-title" content="Metrici.ro">
+    <meta name="application-name" content="Metrici.ro">
+    <!-- Tab Color Android Chrome -->
+    <meta name="theme-color" content="#e11422">
+    <link rel = "stylesheet" type = "text/css" href = "newMaster.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="jsMaster.js" defer></script>
+    <title>File Browser</title>
+
+<style>
+   table, td, th {
+	  border: 1px solid #e11422;
+   }
+</style>
+</head>
+
+<body>
+   <div class="logo_container">
+      <img url="/logo.png">
+      <button class="back_button" onclick="location.href = '/register';">Go Back</button>
+      <span class = "version">Metrici Multi-Controller</br>Version: %PH_Version%</span>
+   </div>
+
+   <div class="center_box">
+      <div class = "box_head">
+            <div class = "title"><h1>Setup - Import/Export Data</h1></div>
+      </div>   
+      <table style="margin: 0 auto; text-align: center; color: white;" >
+      <tr>
+         <th colspan="4" style="text-align: center">~count~ Config files&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Total: 
+         ~total~ kB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Used: ~used~ kB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Free: 
+         ~free~ kB</th>
+      </tr>
+      <tr>
+         <th>Name</th>
+         <th>Size</th>
+         <th colspan="2">Action</th>
+      </tr>
+      ~directories~
+      </table>
+   </div>
+   <div class="center_box">
+      <div class = "upload_firmware_container">
+         Only the following file names will work
+         <span style="color:#e11422">network.txt</span>, 
+         <span style="color:#e11422">user.txt</span>,
+         <span style="color:#e11422">inputs.txt</span>,
+         <span style="color:#e11422">outputs.txt</span>,
+         <span style="color:#e11422">wiegand.txt</span>  or
+         <span style="color:#e11422">rfid.txt</span>.
+         </br></br>         
+         <div style="text-align:left; margin-left:10px;">
+            Notes:</br>
+            (1): After a file upload please check in the table above that the file's name ends in <span style="color:#e11422">.txt</span>.</br>
+            (2): The files must end with <span style="color:#e11422">.txt</span> extension.</br>
+            (3): A restart is necessary after a file upload.</br>
+            (4): You can upload all the files you need before restarting the device.
+         </div>
+         <form method = "POST" action="/doUpload" enctype="multipart/form-data">
+            <label class="file_input_label" for="files">Browse files</label>
+            <input id="files" type="file" name="data"/>
+            <input class="upload_button" type="submit" name="upload" value="Upload" title = "Upload Files">
+         </form>
+         <form method="POST">
+            <input class = "restart_button" type="submit" name="restart_device" value="Restart Device">
+         </form>
+      </div>
+   </div>
+
+   <div class = "bottom_container">
+         <div class = "box_head"> <div class = "title"> <h1>Logs</h1> </div> </div>
+         <div class = "text_box">%PLACEHOLDER_LOGS%</div>
+   </div>
+
+<script>
+   $('#files').on("change",function() {
+         console.log("change fire");
+         var i = $(this).prev('label').clone();
+         var file = $('#files')[0].files[0].name;
+         console.log(file);
+         $(this).prev('label').text(file);        
+   });
+</script>
+
+</body>
+</html>
