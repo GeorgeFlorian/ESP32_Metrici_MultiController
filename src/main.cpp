@@ -440,20 +440,7 @@ void ethernetConfig(String x[])
   if (x[0] == "WiFi")
     return;
   ETH.begin();
-  int ki = 0;
-  while (!eth_connected && ki < 20)
-  {
-    Serial.println("Establishing ETHERNET Connection ... ");
-    delay(1000);
-    ki++;
-  }
-  if (!eth_connected)
-  {
-    logOutput("(1) Could not access Network ! Trying again...");
-    logOutput("Controller will restart in 5 seconds !");
-    delay(5000);
-    ESP.restart();
-  }
+
   if (x[1] != NULL && //Local IP
       x[1].length() != 0 &&
       x[2] != NULL && // Gateway
@@ -471,7 +458,21 @@ void ethernetConfig(String x[])
     {
       logOutput("Couldn't configure STATIC IP ! Obtaining DHCP IP !");
     }
-    delay(50);
+
+    int ki = 0;
+    while (!eth_connected && ki < 20)
+    {
+      Serial.println("Establishing ETHERNET Connection ... ");
+      delay(1000);
+      ki++;
+    }
+    if (!eth_connected)
+    {
+      logOutput("(1) Could not access Network ! Trying again...");
+      logOutput("Controller will restart in 5 seconds !");
+      delay(5000);
+      ESP.restart();
+    }
   }
   else
   {
@@ -576,279 +577,274 @@ void startWiFiAP()
   // while(WiFi.softAPgetStationNum() == 0)
   // {
   //   if(digitalRead(RELAY1) != HIGH)
-  //     digitalWrite(RELAY1, HIGH);    
+  //     digitalWrite(RELAY1, HIGH);
   // }
   // digitalWrite(RELAY1, LOW);
 
-  server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/favicon.ico", "image/ico");
-  });
-  server.on("/newMaster.css", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/newMaster.css", "text/css");
-  });
-  server.on("/jsMaster.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/jsMaster.js", "text/javascript");
-  });
-  server.on("/logo.png", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/logo.png", "image/png");
-  });
-  server.on("/events_placeholder.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/events_placeholder.html", "text/html", false, processor);
-  });
+  server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/favicon.ico", "image/ico"); });
+  server.on("/newMaster.css", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/newMaster.css", "text/css"); });
+  server.on("/jsMaster.js", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/jsMaster.js", "text/javascript"); });
+  server.on("/logo.png", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/logo.png", "image/png"); });
+  server.on("/events_placeholder.html", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/events_placeholder.html", "text/html", false, processor); });
 
-  server.on("/register", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/createUser.html", "text/html", false, processor);
-  });
-  server.on("/chooseIP", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/chooseIP.html", "text/html", false, processor);
-  });
-  server.on("/dhcpIP", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/dhcpIP_AP.html", "text/html", false, processor);
-  });
-  server.on("/staticIP", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/staticIP_AP.html", "text/html", false, processor);
-  });
-  server.on("/logs", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/events.html", "text/html", false, processor);
-  });
+  server.on("/register", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/createUser.html", "text/html", false, processor); });
+  server.on("/chooseIP", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/chooseIP.html", "text/html", false, processor); });
+  server.on("/dhcpIP", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/dhcpIP_AP.html", "text/html", false, processor); });
+  server.on("/staticIP", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/staticIP_AP.html", "text/html", false, processor); });
+  server.on("/logs", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/events.html", "text/html", false, processor); });
 
-  server.on("/register", HTTP_POST, [](AsyncWebServerRequest *request) {
-    if (request->hasArg("register"))
-    {
-      int params = request->params();
-      String values_user[params];
-      for (int i = 0; i < params; i++)
-      {
-        AsyncWebParameter *p = request->getParam(i);
-        if (p->isPost())
-        {
-          logOutput((String) "POST[" + p->name().c_str() + "]: " + p->value().c_str() + "\n");
-          values_user[i] = p->value();
-        }
-        else
-        {
-          logOutput((String) "GET[" + p->name().c_str() + "]: " + p->value().c_str() + "\n");
-        }
-      } // for(int i=0;i<params;i++)
+  server.on("/register", HTTP_POST, [](AsyncWebServerRequest *request)
+            {
+              if (request->hasArg("register"))
+              {
+                int params = request->params();
+                String values_user[params];
+                for (int i = 0; i < params; i++)
+                {
+                  AsyncWebParameter *p = request->getParam(i);
+                  if (p->isPost())
+                  {
+                    logOutput((String) "POST[" + p->name().c_str() + "]: " + p->value().c_str() + "\n");
+                    values_user[i] = p->value();
+                  }
+                  else
+                  {
+                    logOutput((String) "GET[" + p->name().c_str() + "]: " + p->value().c_str() + "\n");
+                  }
+                } // for(int i=0;i<params;i++)
 
-      if (values_user[0] != NULL && values_user[0].length() > 4 &&
-          values_user[1] != NULL && values_user[1].length() > 7)
-      {
-        File userWrite = SPIFFS.open("/user.txt", "w");
-        if (!userWrite)
-          logOutput("ERROR_INSIDE_POST ! Couldn't open file to write USER credentials !");
-        userWrite.println(values_user[0]); // Username
-        userWrite.println(values_user[1]); // Password
-        userWrite.close();
-        logOutput("Username and password saved !");
-        request->redirect("/chooseIP");
-      }
-      else
-        request->redirect("/register");
-    }
-    else if (request->hasArg("skip"))
-    {
-      request->redirect("/chooseIP");
-    }
-    else if (request->hasArg("import"))
-    {
-      request->redirect("/files");
-    }
-    else
-    {
-      request->redirect("/register");
-    }
-  }); // server.on("/register", HTTP_POST, [](AsyncWebServerRequest * request)
+                if (values_user[0] != NULL && values_user[0].length() > 4 &&
+                    values_user[1] != NULL && values_user[1].length() > 7)
+                {
+                  File userWrite = SPIFFS.open("/user.txt", "w");
+                  if (!userWrite)
+                    logOutput("ERROR_INSIDE_POST ! Couldn't open file to write USER credentials !");
+                  userWrite.println(values_user[0]); // Username
+                  userWrite.println(values_user[1]); // Password
+                  userWrite.close();
+                  logOutput("Username and password saved !");
+                  request->redirect("/chooseIP");
+                }
+                else
+                  request->redirect("/register");
+              }
+              else if (request->hasArg("skip"))
+              {
+                request->redirect("/chooseIP");
+              }
+              else if (request->hasArg("import"))
+              {
+                request->redirect("/files");
+              }
+              else
+              {
+                request->redirect("/register");
+              }
+            }); // server.on("/register", HTTP_POST, [](AsyncWebServerRequest * request)
 
-  server.on("/files", HTTP_ANY, [](AsyncWebServerRequest *request) {
-    if (request->hasParam("filename", true))
-    { // Check for files
-      if (request->hasArg("download"))
-      { // Download file
-        Serial.println("Download Filename: " + request->arg("filename"));
-        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, request->arg("filename"), String(), true);
-        response->addHeader("Server", "ESP Async Web Server");
-        request->send(response);
-        return;
-      }
-      else if (request->hasArg("delete"))
-      { // Delete file
-        if (SPIFFS.remove(request->getParam("filename", true)->value()))
-        {
-          logOutput((String)request->getParam("filename", true)->value().c_str() + " was deleted !");
-        }
-        else
-        {
-          logOutput("Could not delete file. Try again !");
-        }
-        request->redirect("/files");
-      }
-    }
-    else if (request->hasArg("restart_device"))
-    {
-      request->send(200, "text/plain", "The device will reboot shortly !");
-      shouldReboot = true;
-    }
+  server.on("/files", HTTP_ANY, [](AsyncWebServerRequest *request)
+            {
+              if (request->hasParam("filename", true))
+              { // Check for files
+                if (request->hasArg("download"))
+                { // Download file
+                  Serial.println("Download Filename: " + request->arg("filename"));
+                  AsyncWebServerResponse *response = request->beginResponse(SPIFFS, request->arg("filename"), String(), true);
+                  response->addHeader("Server", "ESP Async Web Server");
+                  request->send(response);
+                  return;
+                }
+                else if (request->hasArg("delete"))
+                { // Delete file
+                  if (SPIFFS.remove(request->getParam("filename", true)->value()))
+                  {
+                    logOutput((String)request->getParam("filename", true)->value().c_str() + " was deleted !");
+                  }
+                  else
+                  {
+                    logOutput("Could not delete file. Try again !");
+                  }
+                  request->redirect("/files");
+                }
+              }
+              else if (request->hasArg("restart_device"))
+              {
+                request->send(200, "text/plain", "The device will reboot shortly !");
+                shouldReboot = true;
+              }
 
-    String HTML PROGMEM; // HTML code
-    File pageFile = SPIFFS.open("/files_AP.html", "r");
-    if (pageFile)
-    {
-      HTML = readString(pageFile);
-      pageFile.close();
-      HTML = addDirList(HTML);
-      AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML.c_str(), processor);
-      response->addHeader("Server", "ESP Async Web Server");
-      request->send(response);
-    }
-  });
+              String HTML PROGMEM; // HTML code
+              File pageFile = SPIFFS.open("/files_AP.html", "r");
+              if (pageFile)
+              {
+                HTML = readString(pageFile);
+                pageFile.close();
+                HTML = addDirList(HTML);
+                AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML.c_str(), processor);
+                response->addHeader("Server", "ESP Async Web Server");
+                request->send(response);
+              }
+            });
 
-  server.on("/staticIP", HTTP_POST, [](AsyncWebServerRequest *request) {
-    if (request->hasArg("saveStatic"))
-    {
-      int params = request->params();
-      String values_static_post[params];
+  server.on("/staticIP", HTTP_POST, [](AsyncWebServerRequest *request)
+            {
+              if (request->hasArg("saveStatic"))
+              {
+                int params = request->params();
+                String values_static_post[params];
 
-      for (int i = 0; i < params; i++)
-      {
-        AsyncWebParameter *p = request->getParam(i);
-        if (p->isPost())
-        {
-          logOutput((String) "POST[" + p->name() + "]: " + p->value());
-          values_static_post[i] = p->value();
-        }
-        else
-        {
-          logOutput((String) "GET[" + p->name() + "]: " + p->value());
-        }
-      } // for(int i=0;i<params;i++)
+                for (int i = 0; i < params; i++)
+                {
+                  AsyncWebParameter *p = request->getParam(i);
+                  if (p->isPost())
+                  {
+                    logOutput((String) "POST[" + p->name() + "]: " + p->value());
+                    values_static_post[i] = p->value();
+                  }
+                  else
+                  {
+                    logOutput((String) "GET[" + p->name() + "]: " + p->value());
+                  }
+                } // for(int i=0;i<params;i++)
 
-      if (values_static_post[0] == "WiFi")
-      {
-        if (values_static_post[1] != NULL &&
-            values_static_post[1].length() != 0 &&
-            values_static_post[2] != NULL &&
-            values_static_post[2].length() != 0 &&
-            values_static_post[3] != NULL &&
-            values_static_post[3].length() != 0 &&
-            values_static_post[4] != NULL &&
-            values_static_post[4].length() != 0 &&
-            values_static_post[5] != NULL &&
-            values_static_post[5].length() != 0 &&
-            values_static_post[6] != NULL &&
-            values_static_post[6].length() != 0)
-        {
-          File inputsWrite = SPIFFS.open("/network.txt", "w");
-          if (!inputsWrite)
-            logOutput("ERROR_INSIDE_POST ! Couldn't open file to write Static IP credentials !");
-          inputsWrite.println(values_static_post[0]); // Connection Type ? WiFi : Ethernet
-          inputsWrite.println(values_static_post[1]); // SSID
-          inputsWrite.println(values_static_post[2]); // Password
-          inputsWrite.println(values_static_post[3]); // Local IP
-          inputsWrite.println(values_static_post[4]); // Gateway
-          inputsWrite.println(values_static_post[5]); // Subnet
-          inputsWrite.println(values_static_post[6]); // DNS
-          inputsWrite.close();
-          logOutput("Configuration saved !");
-          request->redirect("/logs");
-          shouldReboot = true;
-        }
-        else
-          request->redirect("/staticIP");
-      }
-      else if (values_static_post[0] == "Ethernet")
-      {
-        if (values_static_post[3] != NULL &&
-            values_static_post[3].length() != 0 &&
-            values_static_post[4] != NULL &&
-            values_static_post[4].length() != 0 &&
-            values_static_post[5] != NULL &&
-            values_static_post[5].length() != 0 &&
-            values_static_post[6] != NULL &&
-            values_static_post[6].length() != 0)
-        {
-          File inputsWrite = SPIFFS.open("/network.txt", "w");
-          if (!inputsWrite)
-            logOutput("ERROR_INSIDE_POST ! Couldn't open file to write Static IP credentials !");
-          inputsWrite.println(values_static_post[0]); // Connection Type ? WiFi : Ethernet
-          inputsWrite.println(values_static_post[3]); // Local IP
-          inputsWrite.println(values_static_post[4]); // Gateway
-          inputsWrite.println(values_static_post[5]); // Subnet
-          inputsWrite.println(values_static_post[6]); // DNS
-          inputsWrite.close();
-          logOutput("Configuration saved !");
-          request->redirect("/logs");
-          shouldReboot = true;
-        }
-        else
-          request->redirect("/staticIP");
-      } // if(values_static_post[0] == "WiFi")
-    }
-    else
-    {
-      request->redirect("/staticIP");
-    } // if(request->hasArg("saveStatic"))
-  }); // server.on("/staticLogin", HTTP_POST, [](AsyncWebServerRequest * request)
+                if (values_static_post[0] == "WiFi")
+                {
+                  if (values_static_post[1] != NULL &&
+                      values_static_post[1].length() != 0 &&
+                      values_static_post[2] != NULL &&
+                      values_static_post[2].length() != 0 &&
+                      values_static_post[3] != NULL &&
+                      values_static_post[3].length() != 0 &&
+                      values_static_post[4] != NULL &&
+                      values_static_post[4].length() != 0 &&
+                      values_static_post[5] != NULL &&
+                      values_static_post[5].length() != 0 &&
+                      values_static_post[6] != NULL &&
+                      values_static_post[6].length() != 0)
+                  {
+                    File inputsWrite = SPIFFS.open("/network.txt", "w");
+                    if (!inputsWrite)
+                      logOutput("ERROR_INSIDE_POST ! Couldn't open file to write Static IP credentials !");
+                    inputsWrite.println(values_static_post[0]); // Connection Type ? WiFi : Ethernet
+                    inputsWrite.println(values_static_post[1]); // SSID
+                    inputsWrite.println(values_static_post[2]); // Password
+                    inputsWrite.println(values_static_post[3]); // Local IP
+                    inputsWrite.println(values_static_post[4]); // Gateway
+                    inputsWrite.println(values_static_post[5]); // Subnet
+                    inputsWrite.println(values_static_post[6]); // DNS
+                    inputsWrite.close();
+                    logOutput("Configuration saved !");
+                    request->redirect("/logs");
+                    shouldReboot = true;
+                  }
+                  else
+                    request->redirect("/staticIP");
+                }
+                else if (values_static_post[0] == "Ethernet")
+                {
+                  if (values_static_post[3] != NULL &&
+                      values_static_post[3].length() != 0 &&
+                      values_static_post[4] != NULL &&
+                      values_static_post[4].length() != 0 &&
+                      values_static_post[5] != NULL &&
+                      values_static_post[5].length() != 0 &&
+                      values_static_post[6] != NULL &&
+                      values_static_post[6].length() != 0)
+                  {
+                    File inputsWrite = SPIFFS.open("/network.txt", "w");
+                    if (!inputsWrite)
+                      logOutput("ERROR_INSIDE_POST ! Couldn't open file to write Static IP credentials !");
+                    inputsWrite.println(values_static_post[0]); // Connection Type ? WiFi : Ethernet
+                    inputsWrite.println(values_static_post[3]); // Local IP
+                    inputsWrite.println(values_static_post[4]); // Gateway
+                    inputsWrite.println(values_static_post[5]); // Subnet
+                    inputsWrite.println(values_static_post[6]); // DNS
+                    inputsWrite.close();
+                    logOutput("Configuration saved !");
+                    request->redirect("/logs");
+                    shouldReboot = true;
+                  }
+                  else
+                    request->redirect("/staticIP");
+                } // if(values_static_post[0] == "WiFi")
+              }
+              else
+              {
+                request->redirect("/staticIP");
+              } // if(request->hasArg("saveStatic"))
+            }); // server.on("/staticLogin", HTTP_POST, [](AsyncWebServerRequest * request)
 
-  server.on("/dhcpIP", HTTP_POST, [](AsyncWebServerRequest *request) {
-    if (request->hasArg("saveDHCP"))
-    {
-      int params = request->params();
-      String values_dhcp_post[params];
+  server.on("/dhcpIP", HTTP_POST, [](AsyncWebServerRequest *request)
+            {
+              if (request->hasArg("saveDHCP"))
+              {
+                int params = request->params();
+                String values_dhcp_post[params];
 
-      for (int i = 0; i < params; i++)
-      {
-        AsyncWebParameter *p = request->getParam(i);
-        if (p->isPost())
-        {
-          logOutput((String) "POST[" + p->name() + "]: " + p->value());
-          values_dhcp_post[i] = p->value();
-        }
-        else
-        {
-          logOutput((String) "GET[" + p->name() + "]: " + p->value());
-        }
-      }
+                for (int i = 0; i < params; i++)
+                {
+                  AsyncWebParameter *p = request->getParam(i);
+                  if (p->isPost())
+                  {
+                    logOutput((String) "POST[" + p->name() + "]: " + p->value());
+                    values_dhcp_post[i] = p->value();
+                  }
+                  else
+                  {
+                    logOutput((String) "GET[" + p->name() + "]: " + p->value());
+                  }
+                }
 
-      if (values_dhcp_post[0] == "WiFi")
-      {
-        if (values_dhcp_post[1] != NULL && values_dhcp_post[1].length() != 0 &&
-            values_dhcp_post[2] != NULL && values_dhcp_post[2].length() != 0)
-        {
-          File inputsWrite = SPIFFS.open("/network.txt", "w");
-          if (!inputsWrite)
-            logOutput("ERROR_INSIDE_POST ! Couldn't open file to write DHCP IP credentials !");
-          inputsWrite.println(values_dhcp_post[0]); // Connection Type ? WiFi : Ethernet
-          inputsWrite.println(values_dhcp_post[1]); // SSID
-          inputsWrite.println(values_dhcp_post[2]); // Password
-          inputsWrite.close();
-          logOutput("Configuration saved !");
-          request->redirect("/logs");
-          shouldReboot = true;
-        }
-        else
-          request->redirect("/dhcpIP");
-      }
-      else if (values_dhcp_post[0] == "Ethernet")
-      {
-        File inputsWrite = SPIFFS.open("/network.txt", "w");
-        if (!inputsWrite)
-          logOutput("ERROR_INSIDE_POST ! Couldn't open file to write DHCP IP credentials !");
-        inputsWrite.println(values_dhcp_post[0]); // Connection Type ? WiFi : Ethernet
-        inputsWrite.close();
-        logOutput("Configuration saved !");
-        request->redirect("/logs");
-        shouldReboot = true;
-      }
-    }
-    else
-    {
-      request->redirect("/dhcpIP");
-    } // if(request->hasArg("saveStatic"))
-  }); // server.on("/dhcpLogin", HTTP_POST, [](AsyncWebServerRequest * request)
+                if (values_dhcp_post[0] == "WiFi")
+                {
+                  if (values_dhcp_post[1] != NULL && values_dhcp_post[1].length() != 0 &&
+                      values_dhcp_post[2] != NULL && values_dhcp_post[2].length() != 0)
+                  {
+                    File inputsWrite = SPIFFS.open("/network.txt", "w");
+                    if (!inputsWrite)
+                      logOutput("ERROR_INSIDE_POST ! Couldn't open file to write DHCP IP credentials !");
+                    inputsWrite.println(values_dhcp_post[0]); // Connection Type ? WiFi : Ethernet
+                    inputsWrite.println(values_dhcp_post[1]); // SSID
+                    inputsWrite.println(values_dhcp_post[2]); // Password
+                    inputsWrite.close();
+                    logOutput("Configuration saved !");
+                    request->redirect("/logs");
+                    shouldReboot = true;
+                  }
+                  else
+                    request->redirect("/dhcpIP");
+                }
+                else if (values_dhcp_post[0] == "Ethernet")
+                {
+                  File inputsWrite = SPIFFS.open("/network.txt", "w");
+                  if (!inputsWrite)
+                    logOutput("ERROR_INSIDE_POST ! Couldn't open file to write DHCP IP credentials !");
+                  inputsWrite.println(values_dhcp_post[0]); // Connection Type ? WiFi : Ethernet
+                  inputsWrite.close();
+                  logOutput("Configuration saved !");
+                  request->redirect("/logs");
+                  shouldReboot = true;
+                }
+              }
+              else
+              {
+                request->redirect("/dhcpIP");
+              } // if(request->hasArg("saveStatic"))
+            }); // server.on("/dhcpLogin", HTTP_POST, [](AsyncWebServerRequest * request)
 
   server.onFileUpload(handleUpload);
-  server.onNotFound([](AsyncWebServerRequest *request) { request->redirect("/register"); });
+  server.onNotFound([](AsyncWebServerRequest *request)
+                    { request->redirect("/register"); });
   server.begin(); //-------------------------------------------------------------- server.begin()
 
 } // void startWiFiAP()
@@ -1091,682 +1087,692 @@ void setup()
       configRead.close();
     }
 
-    server.on("/newMaster.css", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(SPIFFS, "/newMaster.css", "text/css");
-    });
-    server.on("/jsMaster.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(SPIFFS, "/jsMaster.js", "text/javascript");
-    });
-    server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(SPIFFS, "/favicon.ico", "image/ico");
-    });
-    server.on("/logo.png", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(SPIFFS, "/logo.png", "image/png");
-    });
-    server.on("/events_placeholder.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(SPIFFS, "/events_placeholder.html", "text/html", false, processor);
-    });
-    server.on("/relay_status1.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(SPIFFS, "/relay_status1.html", "text/html", false, processor);
-    });
-    server.on("/relay_status2.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(SPIFFS, "/relay_status2.html", "text/html", false, processor);
-    });
+    server.on("/newMaster.css", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/newMaster.css", "text/css"); });
+    server.on("/jsMaster.js", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/jsMaster.js", "text/javascript"); });
+    server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/favicon.ico", "image/ico"); });
+    server.on("/logo.png", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/logo.png", "image/png"); });
+    server.on("/events_placeholder.html", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/events_placeholder.html", "text/html", false, processor); });
+    server.on("/relay_status1.html", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/relay_status1.html", "text/html", false, processor); });
+    server.on("/relay_status2.html", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/relay_status2.html", "text/html", false, processor); });
 
-    server.on("/relay1/on", HTTP_GET, [](AsyncWebServerRequest *request) {
-      if (userFlag)
-      {
-        if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
-          return request->requestAuthentication(NULL, false);
-        digitalWrite(RELAY1, HIGH);
-        status1 = "ON";
-        logOutput("Relay1 is ON");
-        if (Delay1.toInt() == 0)
-        {
-          needManualCloseRelayOne = true;
-          logOutput(" Relay 1 will remain open until it is manually closed !");
-        }
-        else
-        {
-          needManualCloseRelayOne = false;
-          logOutput(" Relay 1 will automatically close in " + Delay1 + " seconds !");
-        }
-        startTimeRelayOne = millis();
-        // Serial.println("Do I get here ? /relay1/on");
-        request->send(200, "text/plain", "Relay 1 is ON");
-      }
-      else
-      {
-        digitalWrite(RELAY1, HIGH);
-        status1 = "ON";
-        logOutput(" Relay 1 is ON");
-        if (Delay1.toInt() == 0)
-        {
-          needManualCloseRelayOne = true;
-          logOutput(" Relay 1 will remain open until it is manually closed !");
-        }
-        else
-        {
-          needManualCloseRelayOne = false;
-          logOutput(" Relay 1 will automatically close in " + Delay1 + " seconds !");
-        }
-        startTimeRelayOne = millis();
-        // Serial.println("Do I get here ? /relay1/on");
-        request->send(200, "text/plain", "Relay 1 is ON");
-      }
-    });
+    server.on("/relay1/on", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                if (userFlag)
+                {
+                  if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
+                    return request->requestAuthentication(NULL, false);
+                  digitalWrite(RELAY1, HIGH);
+                  status1 = "ON";
+                  logOutput("Relay1 is ON");
+                  if (Delay1.toInt() == 0)
+                  {
+                    needManualCloseRelayOne = true;
+                    logOutput(" Relay 1 will remain open until it is manually closed !");
+                  }
+                  else
+                  {
+                    needManualCloseRelayOne = false;
+                    logOutput(" Relay 1 will automatically close in " + Delay1 + " seconds !");
+                  }
+                  startTimeRelayOne = millis();
+                  // Serial.println("Do I get here ? /relay1/on");
+                  request->send(200, "text/plain", "Relay 1 is ON");
+                }
+                else
+                {
+                  digitalWrite(RELAY1, HIGH);
+                  status1 = "ON";
+                  logOutput(" Relay 1 is ON");
+                  if (Delay1.toInt() == 0)
+                  {
+                    needManualCloseRelayOne = true;
+                    logOutput(" Relay 1 will remain open until it is manually closed !");
+                  }
+                  else
+                  {
+                    needManualCloseRelayOne = false;
+                    logOutput(" Relay 1 will automatically close in " + Delay1 + " seconds !");
+                  }
+                  startTimeRelayOne = millis();
+                  // Serial.println("Do I get here ? /relay1/on");
+                  request->send(200, "text/plain", "Relay 1 is ON");
+                }
+              });
 
-    server.on("/relay1/off", HTTP_GET, [](AsyncWebServerRequest *request) {
-      if (userFlag)
-      {
-        if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
-          return request->requestAuthentication(NULL, false);
-        digitalWrite(RELAY1, LOW);
-        status1 = "OFF";
-        logOutput(" Relay 1 is OFF");
-        needManualCloseRelayOne = true;
-        // Serial.println("Do I get here ? /relay1/off");
-        request->send(200, "text/plain", "Relay 1 is OFF");
-      }
-      else
-      {
-        digitalWrite(RELAY1, LOW);
-        status1 = "OFF";
-        logOutput(" Relay 1 is OFF");
-        needManualCloseRelayOne = true;
-        // Serial.println("Do I get here ? /relay1/off");
-        request->send(200, "text/plain", "Relay 1 is OFF");
-      }
-    });
+    server.on("/relay1/off", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                if (userFlag)
+                {
+                  if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
+                    return request->requestAuthentication(NULL, false);
+                  digitalWrite(RELAY1, LOW);
+                  status1 = "OFF";
+                  logOutput(" Relay 1 is OFF");
+                  needManualCloseRelayOne = true;
+                  // Serial.println("Do I get here ? /relay1/off");
+                  request->send(200, "text/plain", "Relay 1 is OFF");
+                }
+                else
+                {
+                  digitalWrite(RELAY1, LOW);
+                  status1 = "OFF";
+                  logOutput(" Relay 1 is OFF");
+                  needManualCloseRelayOne = true;
+                  // Serial.println("Do I get here ? /relay1/off");
+                  request->send(200, "text/plain", "Relay 1 is OFF");
+                }
+              });
 
-    server.on("/relay2/on", HTTP_GET, [](AsyncWebServerRequest *request) {
-      if (userFlag)
-      {
-        if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
-          return request->requestAuthentication(NULL, false);
-        digitalWrite(RELAY2, HIGH);
-        status2 = "ON";
-        logOutput("Relay 2 is ON");
-        if (Delay2.toInt() == 0)
-        {
-          needManualCloseRelayTwo = true;
-          logOutput("Relay 2 will remain open until it is manually closed !");
-        }
-        else
-        {
-          needManualCloseRelayTwo = false;
-          logOutput("Relay 2 will automatically close in " + Delay2 + " seconds !");
-        }
-        startTimeRelayTwo = millis();
-        // Serial.println("Do I get here ? /relay2/on");
-        request->send(200, "text/plain", "Relay 2 is ON");
-      }
-      else
-      {
-        digitalWrite(RELAY2, HIGH);
-        status2 = "ON";
-        logOutput("Relay 2 is ON");
-        if (Delay2.toInt() == 0)
-        {
-          needManualCloseRelayTwo = true;
-          logOutput("Relay 2 will remain open until it is manually closed !");
-        }
-        else
-        {
-          needManualCloseRelayTwo = false;
-          logOutput("Relay 2 will automatically close in " + Delay2 + " seconds !");
-        }
-        startTimeRelayTwo = millis();
-        // Serial.println("Do I get here ? /relay2/on");
-        request->send(200, "text/plain", "Relay 2 is ON");
-      }
-    });
+    server.on("/relay2/on", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                if (userFlag)
+                {
+                  if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
+                    return request->requestAuthentication(NULL, false);
+                  digitalWrite(RELAY2, HIGH);
+                  status2 = "ON";
+                  logOutput("Relay 2 is ON");
+                  if (Delay2.toInt() == 0)
+                  {
+                    needManualCloseRelayTwo = true;
+                    logOutput("Relay 2 will remain open until it is manually closed !");
+                  }
+                  else
+                  {
+                    needManualCloseRelayTwo = false;
+                    logOutput("Relay 2 will automatically close in " + Delay2 + " seconds !");
+                  }
+                  startTimeRelayTwo = millis();
+                  // Serial.println("Do I get here ? /relay2/on");
+                  request->send(200, "text/plain", "Relay 2 is ON");
+                }
+                else
+                {
+                  digitalWrite(RELAY2, HIGH);
+                  status2 = "ON";
+                  logOutput("Relay 2 is ON");
+                  if (Delay2.toInt() == 0)
+                  {
+                    needManualCloseRelayTwo = true;
+                    logOutput("Relay 2 will remain open until it is manually closed !");
+                  }
+                  else
+                  {
+                    needManualCloseRelayTwo = false;
+                    logOutput("Relay 2 will automatically close in " + Delay2 + " seconds !");
+                  }
+                  startTimeRelayTwo = millis();
+                  // Serial.println("Do I get here ? /relay2/on");
+                  request->send(200, "text/plain", "Relay 2 is ON");
+                }
+              });
 
-    server.on("/relay2/off", HTTP_GET, [](AsyncWebServerRequest *request) {
-      if (userFlag)
-      {
-        if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
-          return request->requestAuthentication(NULL, false);
-        digitalWrite(RELAY2, LOW);
-        status2 = "OFF";
-        logOutput("Relay 2 is OFF");
-        needManualCloseRelayTwo = true;
-        // Serial.println("Do I get here ? /relay2/off");
-        request->send(200, "text/plain", "Relay 2 is OFF");
-      }
-      else
-      {
-        digitalWrite(RELAY2, LOW);
-        status2 = "OFF";
-        logOutput("Relay 2 is OFF");
-        needManualCloseRelayTwo = true;
-        // Serial.println("Do I get here ? /relay2/off");
-        request->send(200, "text/plain", "Relay 2 is OFF");
-      }
-    });
+    server.on("/relay2/off", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                if (userFlag)
+                {
+                  if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
+                    return request->requestAuthentication(NULL, false);
+                  digitalWrite(RELAY2, LOW);
+                  status2 = "OFF";
+                  logOutput("Relay 2 is OFF");
+                  needManualCloseRelayTwo = true;
+                  // Serial.println("Do I get here ? /relay2/off");
+                  request->send(200, "text/plain", "Relay 2 is OFF");
+                }
+                else
+                {
+                  digitalWrite(RELAY2, LOW);
+                  status2 = "OFF";
+                  logOutput("Relay 2 is OFF");
+                  needManualCloseRelayTwo = true;
+                  // Serial.println("Do I get here ? /relay2/off");
+                  request->send(200, "text/plain", "Relay 2 is OFF");
+                }
+              });
 
-    server.on("/home", HTTP_GET, [](AsyncWebServerRequest *request) {
-      if (userFlag)
-      {
-        if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
-          return request->requestAuthentication(NULL, false);
-        request->send(SPIFFS, "/index.html", "text/html", false, processor);
-      }
-      else
-      {
-        request->send(SPIFFS, "/index.html", "text/html", false, processor);
-      }
-    });
+    server.on("/home", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                if (userFlag)
+                {
+                  if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
+                    return request->requestAuthentication(NULL, false);
+                  request->send(SPIFFS, "/index.html", "text/html", false, processor);
+                }
+                else
+                {
+                  request->send(SPIFFS, "/index.html", "text/html", false, processor);
+                }
+              });
 
-    server.on("/inputs-outputs", HTTP_GET, [](AsyncWebServerRequest *request) {
-      if (userFlag)
-      {
-        if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
-          return request->requestAuthentication(NULL, false);
-        request->send(SPIFFS, "/IO_settings.html", "text/html", false, processor);
-      }
-      else
-      {
-        request->send(SPIFFS, "/IO_settings.html", "text/html", false, processor);
-      }
-    });
+    server.on("/inputs-outputs", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                if (userFlag)
+                {
+                  if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
+                    return request->requestAuthentication(NULL, false);
+                  request->send(SPIFFS, "/IO_settings.html", "text/html", false, processor);
+                }
+                else
+                {
+                  request->send(SPIFFS, "/IO_settings.html", "text/html", false, processor);
+                }
+              });
 
-    server.on("/dhcpIP", HTTP_GET, [](AsyncWebServerRequest *request) {
-      if (userFlag)
-      {
-        if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
-          return request->requestAuthentication(NULL, false);
-        request->send(SPIFFS, "/dhcpIP_STA.html", "text/html", false, processor);
-      }
-      else
-      {
-        request->send(SPIFFS, "/dhcpIP_STA.html", "text/html", false, processor);
-      }
-    });
+    server.on("/dhcpIP", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                if (userFlag)
+                {
+                  if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
+                    return request->requestAuthentication(NULL, false);
+                  request->send(SPIFFS, "/dhcpIP_STA.html", "text/html", false, processor);
+                }
+                else
+                {
+                  request->send(SPIFFS, "/dhcpIP_STA.html", "text/html", false, processor);
+                }
+              });
 
-    server.on("/staticIP", HTTP_GET, [](AsyncWebServerRequest *request) {
-      if (userFlag)
-      {
-        if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
-          return request->requestAuthentication(NULL, false);
-        request->send(SPIFFS, "/staticIP_STA.html", "text/html", false, processor);
-      }
-      else
-      {
-        request->send(SPIFFS, "/staticIP_STA.html", "text/html", false, processor);
-      }
-    });
+    server.on("/staticIP", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                if (userFlag)
+                {
+                  if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
+                    return request->requestAuthentication(NULL, false);
+                  request->send(SPIFFS, "/staticIP_STA.html", "text/html", false, processor);
+                }
+                else
+                {
+                  request->send(SPIFFS, "/staticIP_STA.html", "text/html", false, processor);
+                }
+              });
 
-    server.on("/wiegand-settings", HTTP_GET, [](AsyncWebServerRequest *request) {
-      if (userFlag)
-      {
-        if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
-          return request->requestAuthentication(NULL, false);
-        request->send(SPIFFS, "/wiegand_settings.html", "text/html", false, processor);
-      }
-      else
-      {
-        request->send(SPIFFS, "/wiegand_settings.html", "text/html", false, processor);
-      }
-    });
+    server.on("/wiegand-settings", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                if (userFlag)
+                {
+                  if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
+                    return request->requestAuthentication(NULL, false);
+                  request->send(SPIFFS, "/wiegand_settings.html", "text/html", false, processor);
+                }
+                else
+                {
+                  request->send(SPIFFS, "/wiegand_settings.html", "text/html", false, processor);
+                }
+              });
 
-    server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request) {
-      if (userFlag)
-      {
-        if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
-          return request->requestAuthentication(NULL, false);
-        request->send(SPIFFS, "/update_page.html", "text/html", false, processor);
-      }
-      else
-      {
-        request->send(SPIFFS, "/update_page.html", "text/html", false, processor);
-      }
-    });
+    server.on("/update", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                if (userFlag)
+                {
+                  if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
+                    return request->requestAuthentication(NULL, false);
+                  request->send(SPIFFS, "/update_page.html", "text/html", false, processor);
+                }
+                else
+                {
+                  request->send(SPIFFS, "/update_page.html", "text/html", false, processor);
+                }
+              });
 
-    server.on("/inputs-outputs", HTTP_POST, [](AsyncWebServerRequest *request) {
-      if (digitalRead(RELAY1))
-      {
-        status1 = "ON";
-      }
-      else
-      {
-        status1 = "OFF";
-      }
-      if (digitalRead(RELAY2))
-      {
-        status2 = "ON";
-      }
-      else
-      {
-        status2 = "OFF";
-      }
-      if (request->hasArg("send_outputs"))
-      {
-        String b = request->arg("getDelay1");
-        String d = request->arg("getDelay2");
+    server.on("/inputs-outputs", HTTP_POST, [](AsyncWebServerRequest *request)
+              {
+                if (digitalRead(RELAY1))
+                {
+                  status1 = "ON";
+                }
+                else
+                {
+                  status1 = "OFF";
+                }
+                if (digitalRead(RELAY2))
+                {
+                  status2 = "ON";
+                }
+                else
+                {
+                  status2 = "OFF";
+                }
+                if (request->hasArg("send_outputs"))
+                {
+                  String b = request->arg("getDelay1");
+                  String d = request->arg("getDelay2");
 
-        if (b.length() != 0)
-        {
-          Delay1 = b;
-          logOutput((String) "POST[getDelay1]: " + Delay1);
-        }
-        if (d.length() != 0)
-        {
-          Delay2 = d;
-          logOutput((String) "POST[getDelay2]: " + Delay2);
-        }
+                  if (b.length() != 0)
+                  {
+                    Delay1 = b;
+                    logOutput((String) "POST[getDelay1]: " + Delay1);
+                  }
+                  if (d.length() != 0)
+                  {
+                    Delay2 = d;
+                    logOutput((String) "POST[getDelay2]: " + Delay2);
+                  }
 
-        File configWrite = SPIFFS.open("/outputs.txt", "w");
-        if (!configWrite)
-          logOutput("ERROR_INSIDE_DELAY_POST ! Couldn't open file to save DELAY !");
-        configWrite.println(Delay1);
-        configWrite.println(Delay2);
-        configWrite.close();
+                  File configWrite = SPIFFS.open("/outputs.txt", "w");
+                  if (!configWrite)
+                    logOutput("ERROR_INSIDE_DELAY_POST ! Couldn't open file to save DELAY !");
+                  configWrite.println(Delay1);
+                  configWrite.println(Delay2);
+                  configWrite.close();
 
-        request->redirect("/inputs-outputs");
-      }
-      else if (request->hasArg("send_inputs"))
-      {
-        String a = request->arg("getInput1");
-        String b = request->arg("getPort1");
-        String c = request->arg("getInput2");
-        String d = request->arg("getPort2");
+                  request->redirect("/inputs-outputs");
+                }
+                else if (request->hasArg("send_inputs"))
+                {
+                  String a = request->arg("getInput1");
+                  String b = request->arg("getPort1");
+                  String c = request->arg("getInput2");
+                  String d = request->arg("getPort2");
 
-        if (a.length() != 0)
-        {
-          Input1_IP = a;
-          logOutput((String) "POST[getInput1]: " + Input1_IP);
-        }
-        if (b.length() != 0)
-        {
-          Port1 = b;
-          logOutput((String) "POST[getPort1]: " + Port1);
-        }
-        if (c.length() != 0)
-        {
-          Input2_IP = c;
-          logOutput((String) "POST[getInput2]: " + Input2_IP);
-        }
-        if (d.length() != 0)
-        {
-          Port2 = d;
-          logOutput((String) "POST[getPort2]: " + Port2);
-        }
+                  if (a.length() != 0)
+                  {
+                    Input1_IP = a;
+                    logOutput((String) "POST[getInput1]: " + Input1_IP);
+                  }
+                  if (b.length() != 0)
+                  {
+                    Port1 = b;
+                    logOutput((String) "POST[getPort1]: " + Port1);
+                  }
+                  if (c.length() != 0)
+                  {
+                    Input2_IP = c;
+                    logOutput((String) "POST[getInput2]: " + Input2_IP);
+                  }
+                  if (d.length() != 0)
+                  {
+                    Port2 = d;
+                    logOutput((String) "POST[getPort2]: " + Port2);
+                  }
 
-        File configWrite = SPIFFS.open("/inputs.txt", "w");
-        if (!configWrite)
-          logOutput("ERROR_INSIDE_DELAY_POST ! Couldn't open file to save DELAY !");
-        configWrite.println(Input1_IP);
-        configWrite.println(Port1);
-        configWrite.println(Input2_IP);
-        configWrite.println(Port2);
-        configWrite.close();
+                  File configWrite = SPIFFS.open("/inputs.txt", "w");
+                  if (!configWrite)
+                    logOutput("ERROR_INSIDE_DELAY_POST ! Couldn't open file to save DELAY !");
+                  configWrite.println(Input1_IP);
+                  configWrite.println(Port1);
+                  configWrite.println(Input2_IP);
+                  configWrite.println(Port2);
+                  configWrite.close();
 
-        request->redirect("/inputs-outputs");
-      }
-      else if (request->hasArg("relay1_on"))
-      {
-        Serial.println("relay1 /on button was PRESSED");
-        digitalWrite(RELAY1, HIGH);
-        status1 = "ON";
-        logOutput(" Relay 1 is ON");
-        if (Delay1.toInt() == 0)
-        {
-          needManualCloseRelayOne = true;
-          logOutput(" Relay 1 will remain open until it is manually closed !");
-        }
-        else
-        {
-          needManualCloseRelayOne = false;
-          logOutput(" Relay 1 will automatically close in " + Delay1 + " seconds !");
-        }
-        startTimeRelayOne = millis();
-        request->redirect("/inputs-outputs");
-      }
-      else if (request->hasArg("relay1_off"))
-      {
-        Serial.println("relay1 /off button was PRESSED");
-        logOutput("You have manually closed Relay 1");
-        digitalWrite(RELAY1, LOW);
-        status1 = "OFF";
-        needManualCloseRelayOne = true; // I pressed the /off button and the timer won't start
-        logOutput(" Relay 1 is OFF");
-        request->redirect("/inputs-outputs");
-      }
-      else if (request->hasArg("relay2_on"))
-      {
-        Serial.println("relay2 /on button was PRESSED");
-        digitalWrite(RELAY2, HIGH);
-        status2 = "ON";
-        logOutput("Relay 2 is ON");
-        if (Delay2.toInt() == 0)
-        {
-          needManualCloseRelayTwo = true;
-          logOutput("Relay 2 will remain open until it is manually closed !");
-        }
-        else
-        {
-          needManualCloseRelayTwo = false;
-          logOutput("Relay 2 will automatically close in " + Delay2 + " seconds !");
-        }
-        startTimeRelayTwo = millis();
-        request->redirect("/inputs-outputs");
-      }
-      else if (request->hasArg("relay2_off"))
-      {
-        Serial.println("relay2 /off button was PRESSED");
-        logOutput("You have manually closed Relay 2");
-        digitalWrite(RELAY2, LOW);
-        status2 = "OFF";
-        needManualCloseRelayTwo = true; // I pressed the button and the timer won't start
-        logOutput("Relay 2 is OFF");
-        request->redirect("/inputs-outputs");
-      }
-      else
-      {
-        request->redirect("/inputs-outputs");
-      }
-    });
+                  request->redirect("/inputs-outputs");
+                }
+                else if (request->hasArg("relay1_on"))
+                {
+                  Serial.println("relay1 /on button was PRESSED");
+                  digitalWrite(RELAY1, HIGH);
+                  status1 = "ON";
+                  logOutput(" Relay 1 is ON");
+                  if (Delay1.toInt() == 0)
+                  {
+                    needManualCloseRelayOne = true;
+                    logOutput(" Relay 1 will remain open until it is manually closed !");
+                  }
+                  else
+                  {
+                    needManualCloseRelayOne = false;
+                    logOutput(" Relay 1 will automatically close in " + Delay1 + " seconds !");
+                  }
+                  startTimeRelayOne = millis();
+                  request->redirect("/inputs-outputs");
+                }
+                else if (request->hasArg("relay1_off"))
+                {
+                  Serial.println("relay1 /off button was PRESSED");
+                  logOutput("You have manually closed Relay 1");
+                  digitalWrite(RELAY1, LOW);
+                  status1 = "OFF";
+                  needManualCloseRelayOne = true; // I pressed the /off button and the timer won't start
+                  logOutput(" Relay 1 is OFF");
+                  request->redirect("/inputs-outputs");
+                }
+                else if (request->hasArg("relay2_on"))
+                {
+                  Serial.println("relay2 /on button was PRESSED");
+                  digitalWrite(RELAY2, HIGH);
+                  status2 = "ON";
+                  logOutput("Relay 2 is ON");
+                  if (Delay2.toInt() == 0)
+                  {
+                    needManualCloseRelayTwo = true;
+                    logOutput("Relay 2 will remain open until it is manually closed !");
+                  }
+                  else
+                  {
+                    needManualCloseRelayTwo = false;
+                    logOutput("Relay 2 will automatically close in " + Delay2 + " seconds !");
+                  }
+                  startTimeRelayTwo = millis();
+                  request->redirect("/inputs-outputs");
+                }
+                else if (request->hasArg("relay2_off"))
+                {
+                  Serial.println("relay2 /off button was PRESSED");
+                  logOutput("You have manually closed Relay 2");
+                  digitalWrite(RELAY2, LOW);
+                  status2 = "OFF";
+                  needManualCloseRelayTwo = true; // I pressed the button and the timer won't start
+                  logOutput("Relay 2 is OFF");
+                  request->redirect("/inputs-outputs");
+                }
+                else
+                {
+                  request->redirect("/inputs-outputs");
+                }
+              });
 
-    server.on("/files", HTTP_ANY, [](AsyncWebServerRequest *request) {
-      // Serial.print("/files, request: ");stop
-      // Serial.println(request->methodToString());
-      if (userFlag)
-      {
-        if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
-          return request->requestAuthentication(NULL, false);
-        if (request->hasParam("filename", true))
-        { // Download file
-          if (request->hasArg("download"))
-          { // File download
-            Serial.println("Download Filename: " + request->arg("filename"));
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, request->arg("filename"), String(), true);
-            response->addHeader("Server", "ESP Async Web Server");
-            request->send(response);
-            return;
-          }
-          else if (request->hasArg("delete"))
-          { // Delete file
-            if (SPIFFS.remove(request->getParam("filename", true)->value()))
-            {
-              logOutput((String)request->getParam("filename", true)->value().c_str() + " was deleted !");
-            }
-            else
-            {
-              logOutput("Could not delete file. Try again !");
-            }
-            request->redirect("/files");
-          }
-        }
-        else if (request->hasArg("restart_device"))
-        {
-          request->send(200, "text/plain", "The device will reboot shortly !");
-          ESP.restart();
-        }
-        String HTML PROGMEM; // HTML code
-        File pageFile = SPIFFS.open("/files_STA.html", "r");
-        if (pageFile)
-        {
-          HTML = readString(pageFile);
-          pageFile.close();
-          HTML = addDirList(HTML);
-          AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML.c_str(), processor);
-          response->addHeader("Server", "ESP Async Web Server");
-          request->send(response);
-        }
-      }
-      else
-      {
-        if (request->hasParam("filename", true))
-        { // Download file
-          if (request->hasArg("download"))
-          { // File download
-            Serial.println("Download Filename: " + request->arg("filename"));
-            AsyncWebServerResponse *response = request->beginResponse(SPIFFS, request->arg("filename"), String(), true);
-            response->addHeader("Server", "ESP Async Web Server");
-            request->send(response);
-            return;
-          }
-          else if (request->hasArg("delete"))
-          { // Delete file
-            if (SPIFFS.remove(request->getParam("filename", true)->value()))
-            {
-              logOutput((String)request->getParam("filename", true)->value().c_str() + " was deleted !");
-            }
-            else
-            {
-              logOutput("Could not delete file. Try again !");
-            }
-            request->redirect("/files");
-          }
-        }
-        else if (request->hasArg("restart_device"))
-        {
-          request->send(200, "text/plain", "The device will reboot shortly !");
-          ESP.restart();
-        }
-        String HTML PROGMEM; // HTML code
-        File pageFile = SPIFFS.open("/files_STA.html", "r");
-        if (pageFile)
-        {
-          HTML = readString(pageFile);
-          pageFile.close();
-          HTML = addDirList(HTML);
-          AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML.c_str(), processor);
-          response->addHeader("Server", "ESP Async Web Server");
-          request->send(response);
-        }
-      }
-    }); // server.on("/files", HTTP_ANY, [](AsyncWebServerRequest *request)
+    server.on("/files", HTTP_ANY, [](AsyncWebServerRequest *request)
+              {
+                // Serial.print("/files, request: ");stop
+                // Serial.println(request->methodToString());
+                if (userFlag)
+                {
+                  if (!request->authenticate(value_login[0].c_str(), value_login[1].c_str()))
+                    return request->requestAuthentication(NULL, false);
+                  if (request->hasParam("filename", true))
+                  { // Download file
+                    if (request->hasArg("download"))
+                    { // File download
+                      Serial.println("Download Filename: " + request->arg("filename"));
+                      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, request->arg("filename"), String(), true);
+                      response->addHeader("Server", "ESP Async Web Server");
+                      request->send(response);
+                      return;
+                    }
+                    else if (request->hasArg("delete"))
+                    { // Delete file
+                      if (SPIFFS.remove(request->getParam("filename", true)->value()))
+                      {
+                        logOutput((String)request->getParam("filename", true)->value().c_str() + " was deleted !");
+                      }
+                      else
+                      {
+                        logOutput("Could not delete file. Try again !");
+                      }
+                      request->redirect("/files");
+                    }
+                  }
+                  else if (request->hasArg("restart_device"))
+                  {
+                    request->send(200, "text/plain", "The device will reboot shortly !");
+                    ESP.restart();
+                  }
+                  String HTML PROGMEM; // HTML code
+                  File pageFile = SPIFFS.open("/files_STA.html", "r");
+                  if (pageFile)
+                  {
+                    HTML = readString(pageFile);
+                    pageFile.close();
+                    HTML = addDirList(HTML);
+                    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML.c_str(), processor);
+                    response->addHeader("Server", "ESP Async Web Server");
+                    request->send(response);
+                  }
+                }
+                else
+                {
+                  if (request->hasParam("filename", true))
+                  { // Download file
+                    if (request->hasArg("download"))
+                    { // File download
+                      Serial.println("Download Filename: " + request->arg("filename"));
+                      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, request->arg("filename"), String(), true);
+                      response->addHeader("Server", "ESP Async Web Server");
+                      request->send(response);
+                      return;
+                    }
+                    else if (request->hasArg("delete"))
+                    { // Delete file
+                      if (SPIFFS.remove(request->getParam("filename", true)->value()))
+                      {
+                        logOutput((String)request->getParam("filename", true)->value().c_str() + " was deleted !");
+                      }
+                      else
+                      {
+                        logOutput("Could not delete file. Try again !");
+                      }
+                      request->redirect("/files");
+                    }
+                  }
+                  else if (request->hasArg("restart_device"))
+                  {
+                    request->send(200, "text/plain", "The device will reboot shortly !");
+                    ESP.restart();
+                  }
+                  String HTML PROGMEM; // HTML code
+                  File pageFile = SPIFFS.open("/files_STA.html", "r");
+                  if (pageFile)
+                  {
+                    HTML = readString(pageFile);
+                    pageFile.close();
+                    HTML = addDirList(HTML);
+                    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML.c_str(), processor);
+                    response->addHeader("Server", "ESP Async Web Server");
+                    request->send(response);
+                  }
+                }
+              }); // server.on("/files", HTTP_ANY, [](AsyncWebServerRequest *request)
 
-    server.on("/staticIP", HTTP_POST, [](AsyncWebServerRequest *request) {
-      if (request->hasArg("saveStatic"))
-      {
-        int params = request->params();
-        String values_static_post[params];
-        for (int i = 0; i < params; i++)
-        {
-          AsyncWebParameter *p = request->getParam(i);
-          if (p->isPost())
-          {
-            logOutput((String) "POST[" + p->name() + "]: " + p->value());
-            values_static_post[i] = p->value();
-          }
-          else
-          {
-            logOutput((String) "GET[" + p->name() + "]: " + p->value());
-          }
-        } // for(int i=0;i<params;i++)
+    server.on("/staticIP", HTTP_POST, [](AsyncWebServerRequest *request)
+              {
+                if (request->hasArg("saveStatic"))
+                {
+                  int params = request->params();
+                  String values_static_post[params];
+                  for (int i = 0; i < params; i++)
+                  {
+                    AsyncWebParameter *p = request->getParam(i);
+                    if (p->isPost())
+                    {
+                      logOutput((String) "POST[" + p->name() + "]: " + p->value());
+                      values_static_post[i] = p->value();
+                    }
+                    else
+                    {
+                      logOutput((String) "GET[" + p->name() + "]: " + p->value());
+                    }
+                  } // for(int i=0;i<params;i++)
 
-        if (values_static_post[0] == "WiFi")
-        {
-          if (values_static_post[1] != NULL &&
-              values_static_post[1].length() != 0 &&
-              values_static_post[2] != NULL &&
-              values_static_post[2].length() != 0 &&
-              values_static_post[3] != NULL &&
-              values_static_post[3].length() != 0 &&
-              values_static_post[4] != NULL &&
-              values_static_post[4].length() != 0 &&
-              values_static_post[5] != NULL &&
-              values_static_post[5].length() != 0 &&
-              values_static_post[6] != NULL &&
-              values_static_post[6].length() != 0)
-          {
-            File inputsWrite = SPIFFS.open("/network.txt", "w");
-            if (!inputsWrite)
-              logOutput("ERROR_INSIDE_POST ! Couldn't open file to write Static IP credentials !");
-            inputsWrite.println(values_static_post[0]); // Connection Type ? WiFi : Ethernet
-            inputsWrite.println(values_static_post[1]); // SSID
-            inputsWrite.println(values_static_post[2]); // Password
-            inputsWrite.println(values_static_post[3]); // Local IP
-            inputsWrite.println(values_static_post[4]); // Gateway
-            inputsWrite.println(values_static_post[5]); // Subnet
-            inputsWrite.println(values_static_post[6]); // DNS
-            inputsWrite.close();
-            logOutput("Configuration saved !");
-            request->send(200, "text/html", (String) "<div style=\"text-align:center; font-family:arial;\">Congratulation !</br></br>You have successfully changed the networks settings.</br></br>The device will now restart and try to apply the new settings.</br></br>Please wait 10 seconds and then press on the \"Go Home\" button to return to the main page.</br></br>If you can't return to the main page please check the entered values.</br></br><form method=\"post\" action=\"http://" + values_static_post[3] + "\"><input type=\"submit\" value=\"Go Home\"/></form></div>");
-            shouldReboot = true;
-          }
-          else
-            request->redirect("/staticIP");
-        }
-        else if (values_static_post[0] == "Ethernet")
-        {
-          if (values_static_post[3] != NULL &&
-              values_static_post[3].length() != 0 &&
-              values_static_post[4] != NULL &&
-              values_static_post[4].length() != 0 &&
-              values_static_post[5] != NULL &&
-              values_static_post[5].length() != 0 &&
-              values_static_post[6] != NULL &&
-              values_static_post[6].length() != 0)
-          {
-            File inputsWrite = SPIFFS.open("/network.txt", "w");
-            if (!inputsWrite)
-              logOutput("ERROR_INSIDE_POST ! Couldn't open file to write Static IP credentials !");
-            inputsWrite.println(values_static_post[0]); // Connection Type ? WiFi : Ethernet
-            inputsWrite.println(values_static_post[3]); // Local IP
-            inputsWrite.println(values_static_post[4]); // Gateway
-            inputsWrite.println(values_static_post[5]); // Subnet
-            inputsWrite.println(values_static_post[6]); // DNS
-            inputsWrite.close();
-            logOutput("Configuration saved !");
-            Serial.println("New Static IP Address: " + values_static_post[3]);
-            request->send(200, "text/html", (String) "<div style=\"text-align:center; font-family:arial;\">Congratulation !</br></br>You have successfully changed the networks settings.</br></br>The device will now restart and try to apply the new settings.</br></br>Please wait 10 seconds and then press on the \"Go Home\" button to return to the main page.</br></br>If you can't return to the main page please check the entered values.</br></br><form method=\"post\" action=\"http://" + values_static_post[3] + "\"><input type=\"submit\" value=\"Go Home\"/></form></div>");
-            shouldReboot = true;
-          }
-          else
-            request->redirect("/staticIP");
-        } // if(values_static_post[0] == "WiFi")
-      }
-      else
-      {
-        request->redirect("/staticIP");
-      } // if(request->hasArg("saveStatic"))
-    }); // server.on("/staticLogin", HTTP_POST, [](AsyncWebServerRequest * request)
+                  if (values_static_post[0] == "WiFi")
+                  {
+                    if (values_static_post[1] != NULL &&
+                        values_static_post[1].length() != 0 &&
+                        values_static_post[2] != NULL &&
+                        values_static_post[2].length() != 0 &&
+                        values_static_post[3] != NULL &&
+                        values_static_post[3].length() != 0 &&
+                        values_static_post[4] != NULL &&
+                        values_static_post[4].length() != 0 &&
+                        values_static_post[5] != NULL &&
+                        values_static_post[5].length() != 0 &&
+                        values_static_post[6] != NULL &&
+                        values_static_post[6].length() != 0)
+                    {
+                      File inputsWrite = SPIFFS.open("/network.txt", "w");
+                      if (!inputsWrite)
+                        logOutput("ERROR_INSIDE_POST ! Couldn't open file to write Static IP credentials !");
+                      inputsWrite.println(values_static_post[0]); // Connection Type ? WiFi : Ethernet
+                      inputsWrite.println(values_static_post[1]); // SSID
+                      inputsWrite.println(values_static_post[2]); // Password
+                      inputsWrite.println(values_static_post[3]); // Local IP
+                      inputsWrite.println(values_static_post[4]); // Gateway
+                      inputsWrite.println(values_static_post[5]); // Subnet
+                      inputsWrite.println(values_static_post[6]); // DNS
+                      inputsWrite.close();
+                      logOutput("Configuration saved !");
+                      request->send(200, "text/html", (String) "<div style=\"text-align:center; font-family:arial;\">Congratulation !</br></br>You have successfully changed the networks settings.</br></br>The device will now restart and try to apply the new settings.</br></br>Please wait 10 seconds and then press on the \"Go Home\" button to return to the main page.</br></br>If you can't return to the main page please check the entered values.</br></br><form method=\"post\" action=\"http://" + values_static_post[3] + "\"><input type=\"submit\" value=\"Go Home\"/></form></div>");
+                      shouldReboot = true;
+                    }
+                    else
+                      request->redirect("/staticIP");
+                  }
+                  else if (values_static_post[0] == "Ethernet")
+                  {
+                    if (values_static_post[3] != NULL &&
+                        values_static_post[3].length() != 0 &&
+                        values_static_post[4] != NULL &&
+                        values_static_post[4].length() != 0 &&
+                        values_static_post[5] != NULL &&
+                        values_static_post[5].length() != 0 &&
+                        values_static_post[6] != NULL &&
+                        values_static_post[6].length() != 0)
+                    {
+                      File inputsWrite = SPIFFS.open("/network.txt", "w");
+                      if (!inputsWrite)
+                        logOutput("ERROR_INSIDE_POST ! Couldn't open file to write Static IP credentials !");
+                      inputsWrite.println(values_static_post[0]); // Connection Type ? WiFi : Ethernet
+                      inputsWrite.println(values_static_post[3]); // Local IP
+                      inputsWrite.println(values_static_post[4]); // Gateway
+                      inputsWrite.println(values_static_post[5]); // Subnet
+                      inputsWrite.println(values_static_post[6]); // DNS
+                      inputsWrite.close();
+                      logOutput("Configuration saved !");
+                      Serial.println("New Static IP Address: " + values_static_post[3]);
+                      request->send(200, "text/html", (String) "<div style=\"text-align:center; font-family:arial;\">Congratulation !</br></br>You have successfully changed the networks settings.</br></br>The device will now restart and try to apply the new settings.</br></br>Please wait 10 seconds and then press on the \"Go Home\" button to return to the main page.</br></br>If you can't return to the main page please check the entered values.</br></br><form method=\"post\" action=\"http://" + values_static_post[3] + "\"><input type=\"submit\" value=\"Go Home\"/></form></div>");
+                      shouldReboot = true;
+                    }
+                    else
+                      request->redirect("/staticIP");
+                  } // if(values_static_post[0] == "WiFi")
+                }
+                else
+                {
+                  request->redirect("/staticIP");
+                } // if(request->hasArg("saveStatic"))
+              }); // server.on("/staticLogin", HTTP_POST, [](AsyncWebServerRequest * request)
 
-    server.on("/dhcpIP", HTTP_POST, [](AsyncWebServerRequest *request) {
-      if (request->hasArg("saveDHCP"))
-      {
-        int params = request->params();
-        String values_dhcp_post[params];
-        for (int i = 0; i < params; i++)
-        {
-          AsyncWebParameter *p = request->getParam(i);
-          if (p->isPost())
-          {
-            logOutput((String) "POST[" + p->name() + "]: " + p->value());
-            values_dhcp_post[i] = p->value();
-          }
-          else
-          {
-            logOutput((String) "GET[" + p->name() + "]: " + p->value());
-          }
-        }
+    server.on("/dhcpIP", HTTP_POST, [](AsyncWebServerRequest *request)
+              {
+                if (request->hasArg("saveDHCP"))
+                {
+                  int params = request->params();
+                  String values_dhcp_post[params];
+                  for (int i = 0; i < params; i++)
+                  {
+                    AsyncWebParameter *p = request->getParam(i);
+                    if (p->isPost())
+                    {
+                      logOutput((String) "POST[" + p->name() + "]: " + p->value());
+                      values_dhcp_post[i] = p->value();
+                    }
+                    else
+                    {
+                      logOutput((String) "GET[" + p->name() + "]: " + p->value());
+                    }
+                  }
 
-        if (values_dhcp_post[0] == "WiFi")
-        {
-          if (values_dhcp_post[1] != NULL && values_dhcp_post[1].length() != 0 &&
-              values_dhcp_post[2] != NULL && values_dhcp_post[2].length() != 0)
-          {
-            File inputsWrite = SPIFFS.open("/network.txt", "w");
-            if (!inputsWrite)
-              logOutput("ERROR_INSIDE_POST ! Couldn't open file to write DHCP IP credentials !");
-            inputsWrite.println(values_dhcp_post[0]); // Connection Type ? WiFi : Ethernet
-            inputsWrite.println(values_dhcp_post[1]); // SSID
-            inputsWrite.println(values_dhcp_post[2]); // Password
-            inputsWrite.close();
-            logOutput("Configuration saved !");
-            request->send(200, "text/html", "<div style=\"text-align:center; font-family:arial;\">Congratulation !</br></br>You have successfully changed the networks settings.</br></br>The device will now restart and try to apply the new settings.</br></br>You can get this device's IP by looking through your AP's DHCP List.");
-            shouldReboot = true;
-          }
-          else
-            request->redirect("/dhcpIP");
-        }
-        else if (values_dhcp_post[0] == "Ethernet")
-        {
-          File inputsWrite = SPIFFS.open("/network.txt", "w");
-          if (!inputsWrite)
-            logOutput("ERROR_INSIDE_POST ! Couldn't open file to write DHCP IP credentials !");
-          inputsWrite.println(values_dhcp_post[0]); // Connection Type ? WiFi : Ethernet
-          inputsWrite.close();
-          logOutput("Configuration saved !");
-          request->send(200, "text/html", "<div style=\"text-align:center; font-family:arial;\">Congratulation !</br></br>You have successfully changed the networks settings.</br></br>The device will now restart and try to apply the new settings.</br></br>You can get this device's IP by looking through your AP's DHCP List.");
-          shouldReboot = true;
-        }
-      }
-      else
-      {
-        request->redirect("/dhcpIP");
-      } // if(request->hasArg("saveStatic"))
-    }); // server.on("/dhcpLogin", HTTP_POST, [](AsyncWebServerRequest * request)
+                  if (values_dhcp_post[0] == "WiFi")
+                  {
+                    if (values_dhcp_post[1] != NULL && values_dhcp_post[1].length() != 0 &&
+                        values_dhcp_post[2] != NULL && values_dhcp_post[2].length() != 0)
+                    {
+                      File inputsWrite = SPIFFS.open("/network.txt", "w");
+                      if (!inputsWrite)
+                        logOutput("ERROR_INSIDE_POST ! Couldn't open file to write DHCP IP credentials !");
+                      inputsWrite.println(values_dhcp_post[0]); // Connection Type ? WiFi : Ethernet
+                      inputsWrite.println(values_dhcp_post[1]); // SSID
+                      inputsWrite.println(values_dhcp_post[2]); // Password
+                      inputsWrite.close();
+                      logOutput("Configuration saved !");
+                      request->send(200, "text/html", "<div style=\"text-align:center; font-family:arial;\">Congratulation !</br></br>You have successfully changed the networks settings.</br></br>The device will now restart and try to apply the new settings.</br></br>You can get this device's IP by looking through your AP's DHCP List.");
+                      shouldReboot = true;
+                    }
+                    else
+                      request->redirect("/dhcpIP");
+                  }
+                  else if (values_dhcp_post[0] == "Ethernet")
+                  {
+                    File inputsWrite = SPIFFS.open("/network.txt", "w");
+                    if (!inputsWrite)
+                      logOutput("ERROR_INSIDE_POST ! Couldn't open file to write DHCP IP credentials !");
+                    inputsWrite.println(values_dhcp_post[0]); // Connection Type ? WiFi : Ethernet
+                    inputsWrite.close();
+                    logOutput("Configuration saved !");
+                    request->send(200, "text/html", "<div style=\"text-align:center; font-family:arial;\">Congratulation !</br></br>You have successfully changed the networks settings.</br></br>The device will now restart and try to apply the new settings.</br></br>You can get this device's IP by looking through your AP's DHCP List.");
+                    shouldReboot = true;
+                  }
+                }
+                else
+                {
+                  request->redirect("/dhcpIP");
+                } // if(request->hasArg("saveStatic"))
+              }); // server.on("/dhcpLogin", HTTP_POST, [](AsyncWebServerRequest * request)
 
-    server.on("/wiegand-settings", HTTP_POST, [](AsyncWebServerRequest *request) {
-      if (request->hasArg("send_url"))
-      {
-        String url = request->arg("getDatabase");
-        String pulse = request->arg("getPulse");
-        String gap = request->arg("getGap");
+    server.on("/wiegand-settings", HTTP_POST, [](AsyncWebServerRequest *request)
+              {
+                if (request->hasArg("send_url"))
+                {
+                  String url = request->arg("getDatabase");
+                  String pulse = request->arg("getPulse");
+                  String gap = request->arg("getGap");
 
-        if (url.length() != 0)
-        {
-          databaseURL = url;
-          logOutput((String) "POST[getDatabase]: " + databaseURL);
-        }
-        if (pulse.length() != 0)
-        {
-          pulseWidth = pulse;
-          logOutput((String) "POST[getPulse]: " + pulseWidth);
-        }
-        if (gap.length() != 0)
-        {
-          interPulseGap = gap;
-          logOutput((String) "POST[getGap]: " + interPulseGap);
-        }
-        File configWrite = SPIFFS.open("/wiegand.txt", "w");
-        if (!configWrite)
-          logOutput("ERROR_INSIDE_DELAY_POST ! Couldn't open file to save Wiegand configuration !");
-        configWrite.println(databaseURL);
-        configWrite.println(pulseWidth);
-        configWrite.println(interPulseGap);
-        configWrite.close();
-        request->redirect("/wiegand-settings");
-      }
-      else
-      {
-        request->redirect("/wiegand-settings");
-      }
-    });
+                  if (url.length() != 0)
+                  {
+                    databaseURL = url;
+                    logOutput((String) "POST[getDatabase]: " + databaseURL);
+                  }
+                  if (pulse.length() != 0)
+                  {
+                    pulseWidth = pulse;
+                    logOutput((String) "POST[getPulse]: " + pulseWidth);
+                  }
+                  if (gap.length() != 0)
+                  {
+                    interPulseGap = gap;
+                    logOutput((String) "POST[getGap]: " + interPulseGap);
+                  }
+                  File configWrite = SPIFFS.open("/wiegand.txt", "w");
+                  if (!configWrite)
+                    logOutput("ERROR_INSIDE_DELAY_POST ! Couldn't open file to save Wiegand configuration !");
+                  configWrite.println(databaseURL);
+                  configWrite.println(pulseWidth);
+                  configWrite.println(interPulseGap);
+                  configWrite.close();
+                  request->redirect("/wiegand-settings");
+                }
+                else
+                {
+                  request->redirect("/wiegand-settings");
+                }
+              });
 
-    server.on("/wiegand", HTTP_POST, [](AsyncWebServerRequest *request) {
-      if (alreadyWorking)
-      {
-        request->send(200, "text/plain", "Warning: Another Wiegand is being sent.");
-      }
-      else
-      {
-        if (request->hasArg("number"))
-        {
-          plateNumber = request->arg("number");
-          size_t size = request->contentLength();
-          Serial.print("Post Size: ");
-          Serial.println(size);
-          // logOutput((String)"The Plate Number is: " + plateNumber);
-          Serial.println("(Inside POST /wiegand)Plate Number: " + plateNumber);
-          wiegandFlag = true;
-        }
-        else
-        {
-          Serial.println("Post did not have a 'number' field.");
-          wiegandFlag = false;
-        }
-        request->send(200, "text/plain", (String) "Plate Number: " + plateNumber + " received. Sending Wiegand ID.");
-      }
-    });
+    server.on("/wiegand", HTTP_POST, [](AsyncWebServerRequest *request)
+              {
+                if (alreadyWorking)
+                {
+                  request->send(200, "text/plain", "Warning: Another Wiegand is being sent.");
+                }
+                else
+                {
+                  if (request->hasArg("number"))
+                  {
+                    plateNumber = request->arg("number");
+                    size_t size = request->contentLength();
+                    Serial.print("Post Size: ");
+                    Serial.println(size);
+                    // logOutput((String)"The Plate Number is: " + plateNumber);
+                    Serial.println("(Inside POST /wiegand)Plate Number: " + plateNumber);
+                    wiegandFlag = true;
+                  }
+                  else
+                  {
+                    Serial.println("Post did not have a 'number' field.");
+                    wiegandFlag = false;
+                  }
+                  request->send(200, "text/plain", (String) "Plate Number: " + plateNumber + " received. Sending Wiegand ID.");
+                }
+              });
 
     server.onFileUpload(handleUpload);
-    server.onNotFound([](AsyncWebServerRequest *request) { request->redirect("/home"); });
+    server.onNotFound([](AsyncWebServerRequest *request)
+                      { request->redirect("/home"); });
     server.begin();
   }
   else
