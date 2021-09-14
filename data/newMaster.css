@@ -1,1 +1,718 @@
-/* Resets - START */*{box-sizing: border-box;}html{min-height: 100%; margin: 0; padding: 0;}body{height: 100%; background-color: rgba(20,20,20,0.7); margin: 0; padding: 0; font-family: sans-serif; overflow-x: hidden;}::placeholder{/* Chrome, Firefox, Opera, Safari 10.1+ */ color: #BBE5ED; opacity: 1; /* Firefox */}:-ms-input-placeholder{/* Internet Explorer 10-11 */ color: #BBE5ED;}::-ms-input-placeholder{/* Microsoft Edge */ color: #BBE5ED;}/* Resets - END *//* General CSS for all pages - START */.logo_container{width: 100%; height: 50px; background: url(logo.png) center no-repeat; background-size: contain; background-color: rgba(0,0,0,0.2); margin: 0; text-align: right;}.box_head{width: 100%; text-align: center;}.title{width: 100%; height: 40px; background-color: #e11422; border-bottom: 1px solid #AB4250; color: white; line-height: 40px; text-align: center;}h1{margin: 0; padding: 0; font-size: 1.4em; white-space: nowrap;}/* text_box_STA is for the index.html *//* text_box is for the logs container */.text_box, .text_box_STA{margin: 10px; overflow: hidden; color:white; font-size: 0.9em;}.text_box{font-size: 1.1em;}.center_box{width: 600px; background: rgba(0,0,0,0.2); margin: 40px auto; text-align: left;}.input_row{width: 100%; height:70px; bottom:0; color: white; position: relative;}.input_text{position: absolute; bottom:0; left: 0; width: 100%; height: 30px; float: left; background: rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,1); outline: none; padding-left:10px; color: white; font-size: 1em; z-index: 3;}.input_text:focus{box-shadow: 0 0 6px rgba(0, 200, 222, 0.25); background-color: rgba(0,0,0,0.5);;}.label_{position: absolute; opacity: 0; transition: .2s bottom, .2s opacity; bottom:0; z-index: 1; font-size: 1em;}.input_text:focus + .label_{bottom: 55%; line-height: 1; opacity: 1; margin-left:10px;}.button{width: 90%; height:35px; position: relative; left: 5%; background: none; background-color: #e11422; border:none; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); margin: 15px 0; color: white; padding: 5px; font-size: 1em; font-weight: bold; cursor: pointer;}.button:hover, .button:focus,.back_button:hover, .back_button:focus,.file_input_label:hover, .file_input_label:focus{background-color: #9d0e17; outline: 0;}.input_row .wrong{color: #e11422; font-weight: 700;}.input_row .correct{color: #14e16d; font-weight: 700;}span{margin: 2px; color: cyan;}.version{position:relative; top: 10px; margin: 0; font-size: 0.75em; color: white; float:right;}.back_button{position: relative; top: 10px; margin: 0; padding: 0; float:left; width: 80px; height: 30px; background: none; background-color: #e11422; border:none; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); color: white; font-weight: bold; cursor: pointer;}/* General CSS for all pages - END *//* Ap_configPage - START */.top_box{width:600px; background: rgba(0,0,0,0.2); margin:40px auto; text-align: left;}/* Ap_configPage - END *//* index.html - START *//* Add a black background color to the top navigation */.topnav{background-color: #333; overflow: hidden;}.center_nav{/* position: relative; */ width: 900px; margin: 0 auto; flex-grow: 1; display: flex; justify-content: center; align-items: center;}/* Style the links inside the navigation bar */ .topnav a{float: left; display: block; color: #f2f2f2; text-align: center; padding: 14px 16px; text-decoration: none; font-size: 1em;}/* Hide the link that should open and close the topnav on small screens */ .topnav .icon{display: none;}/* Dropdown container - needed to position the dropdown content */ .dropdown{float: left; overflow: hidden;}/* Style the dropdown button to fit inside the topnav */ .dropdown .dropbtn{font-size: 16px; border: none; outline: none; color: white; padding: 14px 16px; background-color: inherit; -webkit-appearance: none; font-family: inherit; margin: 0;}/* Style the dropdown content (hidden by default) */ .dropdown-content{display: none; position: absolute; background-color: #f9f9f9; min-width: 167px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1;}/* Style the links inside the dropdown */ .dropdown-content a{float: none; color: black; padding: 12px 16px; text-decoration: none; display: block; text-align: left;}/* Add a dark background on topnav links and the dropdown button on hover */ .topnav a:hover, .dropdown:hover .dropbtn{background-color: #9d0e17; color: white;}/* Add a grey background to dropdown links on hover */ .dropdown-content a:hover{background-color: rgba(0,0,0,0.2); color: black;}/* Show the dropdown menu when the user moves the mouse over the dropdown button */ .dropdown:hover .dropdown-content{display: block;}/* Add an active class to highlight the current page */ .active{background-color: #e11422; color: white;}.top_container{/* width:850px; */ /* background: rgba(0,0,0,0.2); */ display: flex; flex-wrap: nowrap; justify-content: center; margin:40px auto;}.left_container{width: 350px; background-color: rgba(0,0,0,0.2); margin-right: 30px;}p{margin: 10px 0px; padding: 3px; text-align: left;}.middle_container{width: 350px; background-color: rgba(0,0,0,0.2); margin-right: 30px;}.right_container{width: 350px; background-color: rgba(0,0,0,0.2);}.placeholders{display: flex; flex-direction: row; align-items: center; justify-content: center; width:100%; height: 70px; color: white;}.placeholders span{font-size: 0.9em;}.placeholders .button{margin: 5px; width: 80px; height: 30px;}.bottom_container{width: 650px; background: rgba(0,0,0,0.2); margin: 20px auto;}.update_div{position: fixed; right: 2%; bottom: 2%; z-index: 4;}.update_button{width: 200px; height:30px; background: none; background-color: #1489e1; border:none; border-radius: 30px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); margin: 0; color: white; padding: 5px; /* font-size: 18px; */ font-weight: bold; cursor: pointer;}.update_button:hover, .update_button:focus{background-color: #0e5e9b; outline: 0;}/* index.html - END *//* DHCP and Static IP Pages - START */#dhcpFields{display:none;}#staticIPfields{display:none;}.input_radio{margin-top: 35px; margin-bottom: 10px; color:white; text-align: center;}.input_radio input{display:none;}.input_radio span{font-size: 20px; color:white;}.input_radio label{display:inline-block; font-size: 20px; font-weight: bold; line-height: 45px; height: 45px; width: 150px; background: rgba(0,0,0,0.2);}.input_radio label:hover, .input_radio input[type="radio"]:checked + label{color: red; background-color: rgba(0,0,0,0.5);}/* DHCP and Static IP Pages - END *//* files.html - START */.restart_button{width: 200px; height: 30px; background: none; background-color: #e11422; border:none; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); margin: 0 auto; margin-bottom:15px; color: white; padding: 5px; font-size: 18px; font-weight: bold; cursor: pointer;}.restart_button:hover, .restart_button:focus{background-color: #9d0e17; outline: 0;}/* files.html - END *//* Update Page - START */.upload_firmware_container{color: white; margin-top: 20px; text-align: center;}.upload_firmware_container form{margin-top: 30px;}.file_input_label{display:inline-block; width: 200px; height:30px; line-height: 30px; background-color: #e11422; border:none; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); margin-right:20px; color: white; font-size: 18px; font-weight: bold; cursor: pointer;}#files{display: none;}.upload_firmware_container input{vertical-align: top;}.upload_button{display:inline-block; width: 200px; height: 30px; background-color: #1489e1; border:none; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); color: white; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom:20px;}.upload_button:hover, .upload_button:focus{background-color: #0e5e9b; outline: 0;}/* Update Page - END *//* Radar Page - START *//* The container must be positioned relative: */.select_row{width: 100%; position: relative; font-family: Arial; margin-top: 34px;}.select_row select{display: none; /*hide original SELECT element: */}.select-selected{background-color: #1489e1;}/* Style the arrow inside the select element: */ .select-selected:after{position: absolute; content: ""; top: 14px; right: 10px; width: 0; height: 0; border: 6px solid transparent; border-color: #fff transparent transparent transparent;}/* Point the arrow upwards when the select box is open (active): */ .select-selected.select-arrow-active:after{border-color: transparent transparent #fff transparent; top: 7px;}/* style the items (options), including the selected item: */ .select-items div,.select-selected{color: #ffffff; padding: 8px 16px; border: 1px solid transparent; border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent; cursor: pointer;}/* Style items (options): */ .select-items{position: absolute; background-color: #0e5e9b; top: 100%; left: 0; right: 0; z-index: 99;}/* Hide the items when the select box is closed: */ .select-hide{display: none;}.select-items div:hover, .same-as-selected{background-color: rgba(0, 0, 0, 0.2);}/* Radar Page - END *//*Portrait Mode for Mobile Devices*/@media screen and (max-width:850px){/* Resets - START */ html{width: 100%;}/* Resets - END */ /* General CSS for all pages - START */ .center_box{width:100%; text-align: center; /* used to align static buttons */}h1{font-size: 24px;}.box_head{margin-bottom: 0px;}.title{height: 30px; line-height: 30px;}.input_text{left: 10%; width: 80%; height:25px; line-height: 25px;}.label_{left: 10%;}.button{position: static; height: 30px; line-height: 5px; width: 250px; margin: 15px 10px;}/* General CSS for all pages - END */ /* Ap_configPage - START */ .top_box{width:100%;}/* Ap_configPage - END */ /* index.html - START */ .center_nav{width:100%; display: block;}.topnav a:not(:first-child), .dropdown .dropbtn{display: none;}.topnav a.icon{float: right; display: block;}.topnav.responsive{position: relative;}.topnav.responsive a.icon{position: absolute; right: 0; top: 0;}.topnav.responsive a{float: none; display: block; text-align: left;}.topnav.responsive .dropdown{float: none;}.topnav.responsive .dropdown-content{position: relative;}.topnav.responsive .dropdown .dropbtn{display: block; width: 100%; text-align: left;}.top_container{width: 100%; display: inline-block; margin-top: 20px; margin-bottom: 0px;}.left_container{width: 100%;}.left_container .text_box_STA{font-size: 0.9em;}p{margin: 1px;}.right_container, .middle_container{width: 100%; text-align: center; /*used to center align the static buttons*/}.input_text, .input_row, .label_, .button{font-size: 0.95em;}.input_row{height: 50px;}.placeholders{height: 50px;}.placeholders .button{margin: 5px; width: 60px; height: 30px;}.placeholders span{font-size: 0.8em;}.bottom_container{width:100%;}.text_box{font-size: 1.1em;}/* index.html - END */ /*update_page.html - START */ .file_input_label{width:35%;}.upload_button{width:35%;}/*update_page.html - END */}
+
+/*   Resets - START   */
+* {
+    box-sizing: border-box;
+}
+html {
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    height: 100%;
+    background-color: rgba(20,20,20,0.7);
+    margin: 0; 
+    padding: 0; 
+    font-family: sans-serif;
+    overflow-x: hidden;
+}
+
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: #BBE5ED;
+    opacity: 1; /* Firefox */
+}
+
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+    color: #BBE5ED;
+}
+
+::-ms-input-placeholder { /* Microsoft Edge */
+    color: #BBE5ED;
+}
+/*   Resets - END   */
+
+/*   General CSS for all pages - START   */
+.logo_container {
+    width: 100%;
+    height: 50px;
+    background: url(logo.png) center no-repeat;
+    background-size: contain;
+    background-color: rgba(0,0,0,0.2);
+    margin: 0;
+    text-align: right;
+}
+
+.box_head {
+    width: 100%;
+    text-align: center;
+}
+
+.title {
+    width: 100%;
+    height: 40px;
+    background-color: #e11422;
+    border-bottom: 1px solid #AB4250;
+    color: white;
+    line-height: 40px;
+    text-align: center;
+}
+
+h1 {
+    margin: 0;
+    padding: 0;
+    font-size: 1.4em;
+    white-space: nowrap;
+}
+
+/* text_box_STA is for the index.html */
+/* text_box is for the logs container */
+.text_box, .text_box_STA { 
+    margin: 10px;
+    overflow: hidden;
+    color:white;
+    font-size: 0.9em;
+}
+
+.text_box {
+    font-size: 1.1em;
+}
+
+.center_box {
+    width: 600px;
+    background: rgba(0,0,0,0.2);
+    margin: 40px auto;
+    text-align: left;
+}
+
+.input_row {
+    width: 100%;
+    height:70px;
+    bottom:0;
+    color: white;
+    position: relative;
+}
+.input_text {
+    position: absolute;
+    bottom:0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    float: left;
+    background: rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,1);
+    outline: none;
+    padding-left:10px;
+    color: white;
+    font-size: 1em;
+    z-index: 3; 
+}
+
+.input_text:focus {
+    box-shadow: 0 0 6px rgba(0, 200, 222, 0.25);
+    background-color: rgba(0,0,0,0.5);;
+}
+
+.label_ {
+    position: absolute;
+    opacity: 0;
+    transition: .2s bottom, .2s opacity;
+    bottom:0;
+    z-index: 1;
+    font-size: 1em;
+  }
+
+.input_text:focus + .label_ {
+    bottom: 55%;
+    line-height: 1;
+    opacity: 1;
+    margin-left:10px;
+}
+
+.button {
+    width: 90%;
+    height:35px;
+    position: relative;
+    left: 5%;
+    background: none;
+    background-color: #e11422;
+    border:none;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+    margin: 15px 0;
+    color: white;
+    padding: 5px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.button:hover, .button:focus,
+.back_button:hover, .back_button:focus,
+.file_input_label:hover, .file_input_label:focus {
+    background-color: #9d0e17;
+    outline: 0;
+}
+
+.input_row .wrong {
+    color: #e11422;
+    font-weight: 700;
+}
+.input_row .correct {
+    color: #14e16d;
+    font-weight: 700;
+}
+
+span {
+    margin: 2px;
+    color: cyan;
+}
+
+.version {
+    position:relative;
+    top: 10px;
+    margin: 0;
+    font-size: 0.75em;
+    color: white;
+    float:right;
+}
+
+.back_button {
+    position: relative;
+    top: 10px;
+    margin: 0;
+    padding: 0;
+    float:left;
+    width: 80px;
+    height: 30px;
+    background: none;
+    background-color: #e11422;
+    border:none;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+/*   General CSS for all pages - END   */
+
+/*   Ap_configPage - START */
+.top_box {
+    width:600px;
+    background: rgba(0,0,0,0.2);
+    margin:40px auto;
+    text-align: left;
+}
+/*   Ap_configPage - END */
+
+/*  index.html - START   */
+
+/* Add a black background color to the top navigation */
+.topnav {
+    background-color: #333;
+    overflow: hidden;
+}
+
+.center_nav {
+    /* position: relative; */
+    width: 900px;
+    margin: 0 auto;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+  
+  /* Style the links inside the navigation bar */
+  .topnav a {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 1em;
+  }
+  
+  /* Hide the link that should open and close the topnav on small screens */
+  .topnav .icon {
+    display: none;
+  }
+  
+  /* Dropdown container - needed to position the dropdown content */
+  .dropdown {
+    float: left;
+    overflow: hidden;
+  }
+  
+  /* Style the dropdown button to fit inside the topnav */
+  .dropdown .dropbtn {
+    font-size: 16px;
+    border: none;
+    outline: none;
+    color: white;
+    padding: 14px 16px;
+    background-color: inherit;
+    -webkit-appearance: none;
+    font-family: inherit;
+    margin: 0;
+  }
+  
+  /* Style the dropdown content (hidden by default) */
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 167px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  
+  /* Style the links inside the dropdown */
+  .dropdown-content a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+  }
+  
+  /* Add a dark background on topnav links and the dropdown button on hover */
+  .topnav a:hover, .dropdown:hover .dropbtn {
+    background-color: #9d0e17;
+    color: white;
+  }
+  
+  /* Add a grey background to dropdown links on hover */
+  .dropdown-content a:hover {
+    background-color: rgba(0,0,0,0.2);
+    color: black;
+  }
+  
+  /* Show the dropdown menu when the user moves the mouse over the dropdown button */
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+
+  /* Add an active class to highlight the current page */
+  .active {
+    background-color: #e11422;
+    color: white;
+  }
+
+.top_container {
+    /* width:850px; */
+    /* background: rgba(0,0,0,0.2); */
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    margin:40px auto;
+}
+
+.left_container {
+    width: 350px;
+    background-color: rgba(0,0,0,0.2);
+    margin-right: 30px;
+}
+
+p {
+    margin: 10px 0px;
+    padding: 3px;
+    text-align: left;
+}
+
+.middle_container {
+    width: 350px;
+    background-color: rgba(0,0,0,0.2);
+    margin-right: 30px; 
+
+}
+
+.right_container {
+    width: 350px;
+    background-color: rgba(0,0,0,0.2);
+}
+
+.placeholders {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width:100%;
+    height: 70px;
+    color: white;
+}
+
+.placeholders span {
+    font-size: 0.9em;
+}
+
+.placeholders .button {
+    margin: 5px;
+    width: 80px;
+    height: 30px;
+}
+
+.bottom_container {
+    width: 650px;
+    background: rgba(0,0,0,0.2);
+    margin: 20px auto;
+}
+
+.update_div {
+    position: fixed;
+    right: 2%;
+    bottom: 2%;
+    z-index: 4;
+}
+
+.update_button {
+    width: 200px;
+    height:30px;
+    background: none;
+    background-color: #1489e1;
+    border:none;
+    border-radius: 30px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+    margin: 0;
+    color: white;
+    padding: 5px;
+    /* font-size: 18px; */
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.update_button:hover, .update_button:focus {
+    background-color: #0e5e9b;
+    outline: 0;
+}
+/*  index.html - END   */
+
+/* DHCP and Static IP Pages - START */
+
+#dhcpFields {
+    display:none;
+}
+#staticIPfields {
+    display:none;
+}
+
+.input_radio {
+    margin-top: 35px;
+    margin-bottom: 10px;
+    color:white;
+    text-align: center;
+}
+
+.input_radio input {
+    display:none;
+    
+}
+
+.input_radio span{
+    font-size: 20px;
+    color:white;
+}
+.input_radio label {
+    display:inline-block;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 45px;
+    height: 45px;
+    width: 150px;
+    background: rgba(0,0,0,0.2);
+}
+
+.input_radio label:hover, .input_radio input[type="radio"]:checked + label {
+    color: red;
+    background-color: rgba(0,0,0,0.5);
+}
+/* DHCP and Static IP Pages - END */
+
+/* files.html - START */
+
+.restart_button {
+    width: 200px;
+    height: 30px;
+    background: none;
+    background-color: #e11422;
+    border:none;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+    margin: 0 auto;
+    margin-bottom:15px;
+    color: white;
+    padding: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.restart_button:hover, .restart_button:focus {
+    background-color: #9d0e17;
+    outline: 0;    
+}
+
+/* files.html - END */
+
+/* Update Page - START */
+.upload_firmware_container {
+    color: white;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.upload_firmware_container form {
+    margin-top: 30px;
+}
+
+.file_input_label {
+    display:inline-block;
+    width: 200px;
+    height:30px;
+    line-height: 30px;
+    background-color: #e11422;
+    border:none;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+    margin-right:20px;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#files {
+    display: none;
+}
+
+.upload_firmware_container input {
+    vertical-align: top;
+}
+
+.upload_button {
+    display:inline-block;
+    width: 200px;
+    height: 30px;
+    background-color: #1489e1;
+    border:none;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom:20px;
+}
+
+.upload_button:hover, .upload_button:focus {
+    background-color: #0e5e9b;
+    outline: 0;
+}
+/* Update Page - END */
+
+/* Radar Page - START */
+/* The container must be positioned relative: */
+.select_row {
+    width: 100%;
+    position: relative;
+    font-family: Arial;
+    margin-top: 34px;
+  }
+  
+  .select_row select {
+    display: none; /*hide original SELECT element: */
+  }
+  
+  .select-selected {
+    background-color: #1489e1;
+  }
+  
+  /* Style the arrow inside the select element: */
+  .select-selected:after {
+    position: absolute;
+    content: "";
+    top: 14px;
+    right: 10px;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    border-color: #fff transparent transparent transparent;
+  }
+  
+  /* Point the arrow upwards when the select box is open (active): */
+  .select-selected.select-arrow-active:after {
+    border-color: transparent transparent #fff transparent;
+    top: 7px;
+  }
+  
+  /* style the items (options), including the selected item: */
+  .select-items div,.select-selected {
+    color: #ffffff;
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
+    cursor: pointer;
+  }
+  
+  /* Style items (options): */
+  .select-items {
+    position: absolute;
+    background-color: #0e5e9b;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 99;
+  }
+  
+  /* Hide the items when the select box is closed: */
+  .select-hide {
+    display: none;
+  }
+  
+  .select-items div:hover, .same-as-selected {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+/* Radar Page - END */
+
+/*Portrait Mode for Mobile Devices*/
+@media screen and (max-width:850px) {
+    /*   Resets - START   */
+    html {
+        width: 100%;
+    }
+    /*   Resets - END   */
+
+    /*   General CSS for all pages - START   */
+    .center_box {
+        width:100%;
+        text-align: center; /* used to align static buttons */
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .box_head {
+        margin-bottom: 0px;
+    }
+
+    .title {
+        height: 30px;
+        line-height: 30px;
+    }
+
+    .input_text {
+        left: 10%;
+        width: 80%;
+        height:25px;
+        line-height: 25px;
+    }
+
+    .label_ {
+        left: 10%;
+    }
+
+    .button {
+        position: static;
+        height: 30px;
+        line-height: 5px;
+        width: 250px;
+        margin: 15px 10px;
+    }
+    /*   General CSS for all pages - END   */
+
+    /*   Ap_configPage - START */
+    .top_box {
+        width:100%;
+    }
+    /*   Ap_configPage - END */
+
+    /*  index.html - START   */
+    .center_nav {
+        width:100%;
+        display: block;
+    }
+
+    .topnav a:not(:first-child), .dropdown .dropbtn {
+      display: none;
+    }
+    .topnav a.icon {
+      float: right;
+      display: block;
+    }
+    .topnav.responsive {position: relative;}
+    .topnav.responsive a.icon {
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .topnav.responsive a {
+      float: none;
+      display: block;
+      text-align: left;
+    }
+    .topnav.responsive .dropdown {float: none;}
+    .topnav.responsive .dropdown-content {position: relative;}
+    .topnav.responsive .dropdown .dropbtn {
+      display: block;
+      width: 100%;
+      text-align: left;
+    }
+
+    .top_container {
+        width: 100%;
+        display: inline-block;
+        margin-top: 20px;
+        margin-bottom: 0px;
+    }
+    .left_container {
+        width: 100%;
+    }
+    .left_container .text_box_STA {
+        font-size: 0.9em;
+    }
+
+    p {
+        margin: 1px;
+    }
+    .right_container, .middle_container {
+        width: 100%;
+        text-align: center; /*used to center align the static buttons*/
+    }
+
+    .input_text, .input_row, .label_, .button {
+        font-size: 0.95em;
+    }
+    .input_row {
+        height: 50px;
+    }
+
+    .placeholders {
+        height: 50px;
+    }
+
+    .placeholders .button {
+        margin: 5px;
+        width: 60px;
+        height: 30px;
+    }
+
+    .placeholders span {
+        font-size: 0.8em;
+    }
+    
+    .bottom_container {
+        width:100%;
+    }
+    
+    .text_box {
+        font-size: 1.1em;
+    }
+    /*  index.html - END   */
+
+    /*update_page.html - START */
+    .file_input_label {
+        width:35%;
+    }
+    .upload_button {
+        width:35%;
+    }
+    /*update_page.html - END */
+}
