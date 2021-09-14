@@ -458,21 +458,6 @@ void ethernetConfig(String x[])
     {
       logOutput("Couldn't configure STATIC IP ! Obtaining DHCP IP !");
     }
-
-    int ki = 0;
-    while (!eth_connected && ki < 20)
-    {
-      Serial.println("Establishing ETHERNET Connection ... ");
-      delay(1000);
-      ki++;
-    }
-    if (!eth_connected)
-    {
-      logOutput("(1) Could not access Network ! Trying again...");
-      logOutput("Controller will restart in 5 seconds !");
-      delay(5000);
-      ESP.restart();
-    }
   }
   else
   {
@@ -486,6 +471,21 @@ void ethernetConfig(String x[])
   logOutput((String) "Gateway: " + gateway_STA.toString());
   logOutput((String) "Subnet: " + subnet_STA.toString());
   logOutput((String) "DNS: " + primaryDNS.toString());
+
+  int ki = 0;
+  while (!eth_connected && ki < 20)
+  {
+    Serial.println("Establishing ETHERNET Connection ... ");
+    delay(1000);
+    ki++;
+  }
+  if (!eth_connected)
+  {
+    logOutput("(1) Could not access Network ! Trying again...");
+    logOutput("Controller will restart in 5 seconds !");
+    delay(5000);
+    ESP.restart();
+  }
 }
 
 //------------------------- wifiConfig()
