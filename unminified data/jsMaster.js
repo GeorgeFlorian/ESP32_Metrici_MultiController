@@ -13,15 +13,15 @@ var staticFields = document.getElementById('staticIPfields');
 function WiFi() {
     document.getElementById('networkName').required = true;
     document.getElementById('networkPassword').required = true;
-    if(dhcpFields != null) dhcpFields.style.display = "block";
-    if(staticFields != null) staticFields.style.display = "block";
+    if (dhcpFields != null) dhcpFields.style.display = "block";
+    if (staticFields != null) staticFields.style.display = "block";
 }
 
 function Ethernet() {
     document.getElementById('networkName').required = false;
     document.getElementById('networkPassword').required = false;
-    if(dhcpFields != null) dhcpFields.style.display = "none";
-    if(staticFields != null) staticFields.style.display = "block";
+    if (dhcpFields != null) dhcpFields.style.display = "none";
+    if (staticFields != null) staticFields.style.display = "block";
 }
 
 function ValidateIPaddressOnChange(input, type) {
@@ -61,7 +61,6 @@ function ValidateIPaddress() {
     var gateway = document.forms["simple_form"]["gateway"];
     var subnet = document.forms["simple_form"]["subnet"];
     var dns = document.forms["simple_form"]["dns"];
-    var counter = 0;
 
     if (ipaddr.value.match(ipformat)) {
         ipaddr.focus();
@@ -97,20 +96,20 @@ var text_box = document.querySelector('.text_box');
 var rs1 = document.querySelector('.relay_status1');
 var rs2 = document.querySelector('.relay_status2');
 
-if(text_box != null || rs1 != null || rs2 != null) {
+if (text_box != null || rs1 != null || rs2 != null) {
     function refresh() {
-        setTimeout(function () {
-            if( $('.text_box').length ) $('.text_box').load('events_placeholder.html');        
-            if( $('.relay_status1').length ) $('.relay_status1').load('relay_status1.html');
-            if( $('.relay_status2').length ) $('.relay_status2').load('relay_status2.html');
+        setTimeout(function() {
+            if ($('.text_box').length) $('.text_box').load('events_placeholder.html');
+            if ($('.relay_status1').length) $('.relay_status1').load('relay_status1.html');
+            if ($('.relay_status2').length) $('.relay_status2').load('relay_status2.html');
             refresh();
         }, 1000);
     }
-    
-    $(document).ready(function () {
-        if( $('.text_box').length ) $('.text_box').load('events_placeholder.html');        
-        if( $('.relay_status1').length ) $('.relay_status1').load('relay_status1.html');
-        if( $('.relay_status2').length ) $('.relay_status2').load('relay_status2.html');
+
+    $(document).ready(function() {
+        if ($('.text_box').length) $('.text_box').load('events_placeholder.html');
+        if ($('.relay_status1').length) $('.relay_status1').load('relay_status1.html');
+        if ($('.relay_status2').length) $('.relay_status2').load('relay_status2.html');
         refresh();
     });
 }
