@@ -454,6 +454,7 @@ void ethernetConfig(String x[])
     gateway_STA.fromString(x[2]);
     subnet_STA.fromString(x[3]);
     primaryDNS.fromString(x[4]);
+
     if (!ETH.config(local_IP_STA, gateway_STA, subnet_STA, primaryDNS))
     {
       logOutput("Couldn't configure STATIC IP ! Obtaining DHCP IP !");
@@ -463,14 +464,6 @@ void ethernetConfig(String x[])
   {
     logOutput("Obtaining DHCP IP !");
   }
-  local_IP_STA = ETH.localIP();
-  gateway_STA = ETH.gatewayIP();
-  subnet_STA = ETH.subnetMask();
-  primaryDNS = ETH.dnsIP();
-  logOutput((String) "IP addres: " + local_IP_STA.toString());
-  logOutput((String) "Gateway: " + gateway_STA.toString());
-  logOutput((String) "Subnet: " + subnet_STA.toString());
-  logOutput((String) "DNS: " + primaryDNS.toString());
 
   int ki = 0;
   while (!eth_connected && ki < 20)
@@ -486,6 +479,15 @@ void ethernetConfig(String x[])
     delay(5000);
     ESP.restart();
   }
+
+  local_IP_STA = ETH.localIP();
+  gateway_STA = ETH.gatewayIP();
+  subnet_STA = ETH.subnetMask();
+  primaryDNS = ETH.dnsIP();
+  logOutput((String) "IP addres: " + local_IP_STA.toString());
+  logOutput((String) "Gateway: " + gateway_STA.toString());
+  logOutput((String) "Subnet: " + subnet_STA.toString());
+  logOutput((String) "DNS: " + primaryDNS.toString());
 }
 
 //------------------------- wifiConfig()
@@ -587,6 +589,8 @@ void startWiFiAP()
             { request->send(SPIFFS, "/newMaster.css", "text/css"); });
   server.on("/jsMaster.js", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(SPIFFS, "/jsMaster.js", "text/javascript"); });
+  server.on("/jquery-3.6.0.slim.min.js", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/jquery-3.6.0.slim.min.js", "text/javascript"); });
   server.on("/logo.png", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(SPIFFS, "/logo.png", "image/png"); });
   server.on("/events_placeholder.html", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -1091,6 +1095,8 @@ void setup()
               { request->send(SPIFFS, "/newMaster.css", "text/css"); });
     server.on("/jsMaster.js", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(SPIFFS, "/jsMaster.js", "text/javascript"); });
+    server.on("/jquery-3.6.0.slim.min.js", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/jquery-3.6.0.slim.min.js", "text/javascript"); });
     server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(SPIFFS, "/favicon.ico", "image/ico"); });
     server.on("/logo.png", HTTP_GET, [](AsyncWebServerRequest *request)
