@@ -1,1 +1,107 @@
-<!DOCTYPE html><html> <head> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=476mA4zprB"> <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=476mA4zprB"> <link rel="shortcut icon" href="/favicon.ico?v=476mA4zprB"> <meta name="apple-mobile-web-app-title" content="Metrici.ro"> <meta name="application-name" content="Metrici.ro"> <meta name="theme-color" content="#e11422"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <link rel="stylesheet" type="text/css" href="newMaster.css"/> <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> <script src="jsMaster.js" defer></script> <title>Static IP</title></head> <body> <div class="logo_container"> <img url="/logo.png" > <span class="version">Metrici Multi-Controller<br/>Version: %PH_Version%</span> </div><nav class="topnav" id="nav-menu"> <div class="center_nav"> <a href="/home">Home</a> <div class="dropdown active"> <button class="dropbtn">Network Settings <i class="fa fa-caret-down"></i> </button> <div class="dropdown-content"> <a href="/dhcpIP">DHCP IP</a> <a href="/staticIP">Static IP</a> </div></div><a href="/inputs-outputs">I/O Settings</a> <a href="/wiegand-settings">Wiegand Settings</a> <a href="/rfid-settings">RFID Settings</a> <a href="/files">Import/Export Data</a> <a href="/update">Update</a> <a href="javascript:void(0);" class="icon" onclick="navBarFunction()"> <i class="fa fa-bars"></i> </a> </div></nav> <div class="center_box"> <div class="box_head"> <div class="title"><h1>Static IP - Enter Values</h1></div></div><form method="POST" name="simple_form" onsubmit="return ValidateIPaddress()"> <div class="input_radio"> <span>Please select the type of connection: </span></br></br> <input id="wifi" type="radio" name="connectionType" value="WiFi" required onclick="WiFi()"/><label for="wifi">WiFi</label> <input id="eth" type="radio" name="connectionType" value="Ethernet" onclick="Ethernet()"/><label for="eth">Ethernet</label> </div><div id="dhcpFields"> <div class="input_row"> <input type="text" class="input_text" placeholder="Type here the Network Name (SSID)" id="networkName" name="networkName" value="" pattern=".{5,30}" title="Enter between 5 and 30 characters" required/> <label class="label_" for="networkName">Network Name (SSID):</label> </div><div class="input_row"> <input type="password" class="input_text" placeholder="Type here here Password" id="networkPassword" name="networkPassword" value="" minlength="8" pattern=".{8,63}" title="Enter between 8 and 63 characters" required/> <label class="label_" for="networkPassword">Password:</label> </div></div><div id="staticIPfields"> <div class="input_row"> <input type="text" class="input_text" placeholder="Type here IP Address" id="ipAddress" name="ipAddress" value="" required onchange="ValidateIPaddressOnChange(this, 'ipaddress')"/> <label class="label_" for="ipAddress">IP Address:</label> </div><div class="input_row"> <input type="text" class="input_text" placeholder="Type here Gateway" id="gateway" name="gateway" value="" required onchange="ValidateIPaddressOnChange(this, 'gateway')"/> <label class="label_" for="gateway">Gateway:</label> </div><div class="input_row"> <input type="text" class="input_text" placeholder="Type here Subnet Mask" id="subnet" name="subnet" value="" required onchange="ValidateIPaddressOnChange(this, 'subnet')"/> <label class="label_" for="subnet">Subnet Mask:</label> </div><div class="input_row"> <input type="text" class="input_text" placeholder="Type here DNS" id="dns" name="dns" value="" required onchange="ValidateIPaddressOnChange(this, 'dns')"/> <label class="label_" for="dns">DNS:</label> </div></div><input class="button" type="submit" name="saveStatic" value="Save and Reboot"/> </form> </div></body></html>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Chrome, Firefox OS and Opera -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=476mA4zprB">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=476mA4zprB">
+    <link rel="shortcut icon" href="/favicon.ico?v=476mA4zprB">
+    <!-- Tab Color iOS Safari -->
+    <meta name="apple-mobile-web-app-title" content="Metrici.ro">
+    <meta name="application-name" content="Metrici.ro">
+    <!-- Tab Color Android Chrome -->
+    <meta name="theme-color" content="#e11422">
+    <!-- Load an icon library to show a hamburger menu (bars) on small screens -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="newMaster.css" />
+    <title>Static IP</title>
+</head>
+
+<body>
+    <div class="logo_container"> <img url="/logo.png">
+        <span class="version">Metrici Multi-Controller<br />Version: %PH_Version%</span>
+    </div>
+
+    <nav class="topnav" id="nav-menu">
+        <div class="center_nav">
+            <a href="/home">Home</a>
+            <div class="dropdown active">
+                <button class="dropbtn">Network Settings
+                    <i class="fa fa-caret-down"></i>
+                </button>
+                <div class="dropdown-content">
+                    <a href="/dhcpIP">DHCP IP</a>
+                    <a href="/staticIP">Static IP</a>
+                </div>
+            </div>
+            <a href="/inputs-outputs">I/O Settings</a>
+            <a href="/wiegand-settings">Wiegand Settings</a>
+            <a href="/rfid-settings">RFID Settings</a>
+            <a href="/files">Import/Export Data</a>
+            <a href="/update">Update</a>
+            <a href="javascript:void(0);" class="icon" onclick="navBarFunction()">
+                <i class="fa fa-bars"></i>
+            </a>
+        </div>
+    </nav>
+
+    <div class="center_box">
+        <div class="box_head">
+            <div class="title">
+                <h1>Static IP - Enter Values</h1>
+            </div>
+        </div>
+        <form method="POST" name="simple_form" onsubmit="return ValidateIPaddress()">
+            <div class="input_radio">
+                <span>Please select the type of connection: </span></br></br>
+                <input id="wifi" type="radio" name="connectionType" value="WiFi" required onclick="WiFi()" /><label
+                    for="wifi">WiFi</label>
+                <input id="eth" type="radio" name="connectionType" value="Ethernet" onclick="Ethernet()" /><label
+                    for="eth">Ethernet</label>
+            </div>
+            <div id="dhcpFields">
+                <div class="input_row">
+                    <input type="text" class="input_text" placeholder="Type here the Network Name (SSID)"
+                        id="networkName" name="networkName" value="" pattern=".{5,30}"
+                        title="Enter between 5 and 30 characters" required />
+                    <label class="label_" for="networkName">Network Name (SSID):</label>
+                </div>
+                <div class="input_row">
+                    <input type="password" class="input_text" placeholder="Type here here Password" id="networkPassword"
+                        name="networkPassword" value="" minlength="8" pattern=".{8,63}"
+                        title="Enter between 8 and 63 characters" required />
+                    <label class="label_" for="networkPassword">Password:</label>
+                </div>
+            </div>
+            <div id="staticIPfields">
+                <div class="input_row">
+                    <input type="text" class="input_text" placeholder="Type here IP Address" id="ipAddress"
+                        name="ipAddress" value="" required onchange="ValidateIPaddressOnChange(this, 'ipaddress')" />
+                    <label class="label_" for="ipAddress">IP Address:</label>
+                </div>
+                <div class="input_row">
+                    <input type="text" class="input_text" placeholder="Type here Gateway" id="gateway" name="gateway"
+                        value="" required onchange="ValidateIPaddressOnChange(this, 'gateway')" />
+                    <label class="label_" for="gateway">Gateway:</label>
+                </div>
+                <div class="input_row">
+                    <input type="text" class="input_text" placeholder="Type here Subnet Mask" id="subnet" name="subnet"
+                        value="" required onchange="ValidateIPaddressOnChange(this, 'subnet')" />
+                    <label class="label_" for="subnet">Subnet Mask:</label>
+                </div>
+                <div class="input_row">
+                    <input type="text" class="input_text" placeholder="Type here DNS" id="dns" name="dns" value=""
+                        required onchange="ValidateIPaddressOnChange(this, 'dns')" />
+                    <label class="label_" for="dns">DNS:</label>
+                </div>
+            </div>
+            <input class="button" type="submit" name="saveStatic" value="Save and Reboot" />
+        </form>
+    </div>
+    <script src="jquery-3.6.0.slim.min.js"></script>
+    <script src="jsMaster.js"></script>
+</body>
+
+</html>

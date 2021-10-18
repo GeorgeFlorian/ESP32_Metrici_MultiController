@@ -471,14 +471,6 @@ void ethernetConfig(String x[])
   {
     logOutput("Obtaining DHCP IP !");
   }
-  local_IP_STA = ETH.localIP();
-  gateway_STA = ETH.gatewayIP();
-  subnet_STA = ETH.subnetMask();
-  primaryDNS = ETH.dnsIP();
-  logOutput((String) "IP addres: " + local_IP_STA.toString());
-  logOutput((String) "Gateway: " + gateway_STA.toString());
-  logOutput((String) "Subnet: " + subnet_STA.toString());
-  logOutput((String) "DNS: " + primaryDNS.toString());
 
   int ki = 0;
   while (!eth_connected && ki < 20)
@@ -494,6 +486,15 @@ void ethernetConfig(String x[])
     delay(5000);
     ESP.restart();
   }
+
+  local_IP_STA = ETH.localIP();
+  gateway_STA = ETH.gatewayIP();
+  subnet_STA = ETH.subnetMask();
+  primaryDNS = ETH.dnsIP();
+  logOutput((String) "IP addres: " + local_IP_STA.toString());
+  logOutput((String) "Gateway: " + gateway_STA.toString());
+  logOutput((String) "Subnet: " + subnet_STA.toString());
+  logOutput((String) "DNS: " + primaryDNS.toString());
 }
 
 //------------------------- wifiConfig()
@@ -558,7 +559,7 @@ void wifiConfig(String x[])
   gateway_STA = WiFi.gatewayIP();
   subnet_STA = WiFi.subnetMask();
   primaryDNS = WiFi.dnsIP();
-  logOutput((String) "Connected to " + x[1] + " with IP addres: " + local_IP_STA.toString());
+  logOutput((String) "IP addres: " + local_IP_STA.toString());
   logOutput((String) "Gateway: " + gateway_STA.toString());
   logOutput((String) "Subnet: " + subnet_STA.toString());
   logOutput((String) "DNS: " + primaryDNS.toString());
@@ -575,8 +576,8 @@ void buzz(int x)
   }
 }
 
-//------------------------- startAP()
-void startAP()
+//------------------------- startWiFiAP()
+void startWiFiAP()
 {
   if (digitalRead(BUZZER) == LOW)
     buzz(3);
@@ -600,6 +601,8 @@ void startAP()
             { request->send(SPIFFS, "/newMaster.css", "text/css"); });
   server.on("/jsMaster.js", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(SPIFFS, "/jsMaster.js", "text/javascript"); });
+  server.on("/jquery-3.6.0.slim.min.js", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/jquery-3.6.0.slim.min.js", "text/javascript"); });
   server.on("/logo.png", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(SPIFFS, "/logo.png", "image/png"); });
   server.on("/events_placeholder.html", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -860,7 +863,7 @@ void startAP()
                     { request->redirect("/register"); });
   server.begin(); //-------------------------------------------------------------- server.begin()
 
-} // void startAP()
+} // void startWiFiAP()
 
 //------------------------- listAllFiles()
 void listAllFiles()
@@ -1154,6 +1157,8 @@ void setup()
               { request->send(SPIFFS, "/newMaster.css", "text/css"); });
     server.on("/jsMaster.js", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(SPIFFS, "/jsMaster.js", "text/javascript"); });
+    server.on("/jquery-3.6.0.slim.min.js", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/jquery-3.6.0.slim.min.js", "text/javascript"); });
     server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(SPIFFS, "/favicon.ico", "image/ico"); });
     server.on("/logo.png", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -1892,7 +1897,7 @@ void setup()
   {
     networkRead.close();
     logOutput(WiFi.mode(WIFI_AP) ? "Controller went in AP Mode !" : "Controller couldn't go in AP_MODE. AP_STA_MODE will start.");
-    startAP();
+    startWiFiAP();
   }
 }
 
