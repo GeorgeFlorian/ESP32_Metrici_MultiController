@@ -38,7 +38,7 @@ static bool eth_connected = false;
 IPAddress local_IP_STA, gateway_STA, subnet_STA, primaryDNS;
 
 //RFID variable
-bool command = true; // user for sending commands to the reader
+bool command = true; // used for sending commands to the reader
 
 // Wiegand variables
 std::vector<bool> _array;
@@ -1901,8 +1901,6 @@ void setup()
   }
 }
 
-#define MAX_MILLIS_TO_WAIT 1000
-u_long start_time;
 String Port0_Old = "";
 String Port1_Old = "";
 String Port2_Old = "";
@@ -2168,11 +2166,11 @@ void loop()
     {
       // Serial1.print("i\r");
       Serial1.print("mt2000\r"); // Set read interval for the same read action
-      delay(200);
+      delay(50);
       Serial1.print("mku\r"); // Unlocks read command and resets keys to ka=000000000000 and kb=FFFFFFFFFFFF;
-      delay(200);
+      delay(50);
       Serial1.print("e0\r"); // Disable eeprom read; Stop reading Blocks
-      delay(200);
+      delay(50);
       command = false;
 
       while (Serial1.available())
@@ -2184,7 +2182,7 @@ void loop()
         Serial1.read();
     }
 
-    String rf_id;
+    String rf_id = "";
 
     // Initialise RFID UDP 0
     if (Port0_Old != Port0 && Port0 != "Not Set")
@@ -2192,7 +2190,6 @@ void loop()
       Port0_Old = Port0;
       Serial.println("New RFID Port: " + Port0_Old);
       udp0.stop();
-      delay(100);
       udp0.begin(Port0.toInt());
       // only for first initialization
       udpStarted0 = true;
@@ -2247,7 +2244,7 @@ void loop()
         memset(buffer, 0, 40);
         digitalWrite(BUZZER, HIGH);
         startBuzzer = millis();
-        delay(100);
+        // delay(100);
       }
       else
       {
@@ -2257,7 +2254,7 @@ void loop()
   }
 
   // stop buzzer
-  if (digitalRead(BUZZER) == HIGH && (millis() - startBuzzer) > 50)
+  if (digitalRead(BUZZER) == HIGH && (millis() - startBuzzer) > 100)
   {
     // Serial.print("Buzzer Interval: ");
     // Serial.println(millis() - startBuzzer);
