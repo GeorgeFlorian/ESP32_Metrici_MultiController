@@ -19,7 +19,9 @@
 
 // free pin = GPIO16
 
-//create UDP instance
+AsyncWebServer server(80);
+
+//create UDP instance for IO
 WiFiUDP udp1;
 WiFiUDP udp2;
 String Input1_IP = "Not Set";
@@ -27,8 +29,7 @@ String Input2_IP = "Not Set";
 String Port1 = "Not Set";
 String Port2 = "Not Set";
 
-AsyncWebServer server(80);
-
+// Global variables
 bool isAPmodeOn = false;
 bool shouldReboot = false;
 String value_login[3];
@@ -37,14 +38,13 @@ static bool eth_connected = false;
 IPAddress local_IP_STA, gateway_STA, subnet_STA, primaryDNS;
 
 // Wiegand variables
-std::vector<bool> _array;
 bool activateWeigand = false, activateRFID = false;
-bool wiegandFlag = false;
-bool alreadyWorking = false;
+bool wiegand_flag = false;
+bool already_working = false;
 String pulseWidth = "90";
 String interPulseGap = "90";
-String plateNumber = "";
-String databaseURL = "Not Set";
+String plate_number = "";
+String database_url = "Not Set";
 
 // Outputs variables
 String Delay1 = "10";
@@ -330,8 +330,8 @@ String processor(const String &var)
     return Input2_IP;
   else if (var == "PH_Port2")
     return Port2;
-  else if (var == "PH_databaseURL")
-    return databaseURL;
+  else if (var == "PH_database_url")
+    return database_url;
   else if (var == "PH_Pulse")
     return pulseWidth;
   else if (var == "PH_Gap")
@@ -1061,7 +1061,7 @@ void setup()
       fileReadLines(configRead, values_config);
       if (values_config[0] != NULL || values_config[0].length() != 0)
       {
-        databaseURL = values_config[0];
+        database_url = values_config[0];
       }
       else
       {
@@ -1721,8 +1721,8 @@ void setup()
 
                   if (url.length() != 0)
                   {
-                    databaseURL = url;
-                    logOutput((String) "POST[getDatabase]: " + databaseURL);
+                    database_url = url;
+                    logOutput((String) "POST[getDatabase]: " + database_url);
                   }
                   if (pulse.length() != 0)
                   {
@@ -1737,7 +1737,7 @@ void setup()
                   File configWrite = SPIFFS.open("/wiegand.txt", "w");
                   if (!configWrite)
                     logOutput("ERROR_INSIDE_DELAY_POST ! Couldn't open file to save Wiegand configuration !");
-                  configWrite.println(databaseURL);
+                  configWrite.println(database_url);
                   configWrite.println(pulseWidth);
                   configWrite.println(interPulseGap);
                   configWrite.close();
@@ -1751,7 +1751,7 @@ void setup()
 
     server.on("/wiegand", HTTP_POST, [](AsyncWebServerRequest *request)
               {
-                if (alreadyWorking)
+                if (already_working)
                 {
                   request->send(200, "text/plain", "Warning: Another Wiegand is being sent.");
                 }
@@ -1759,20 +1759,21 @@ void setup()
                 {
                   if (request->hasArg("number"))
                   {
-                    plateNumber = request->arg("number");
-                    size_t size = request->contentLength();
-                    Serial.print("Post Size: ");
-                    Serial.println(size);
-                    // logOutput((String)"The Plate Number is: " + plateNumber);
-                    Serial.println("(Inside POST /wiegand)Plate Number: " + plateNumber);
-                    wiegandFlag = true;
+                    plate_number = request->arg("number");
+                    wiegand_flag = true;
+                    Serial.println("(Inside POST /wiegand) - Plate Number: " + plate_number);
+                    // size_t size = request->contentLength();
+                    // Serial.print("Post Size: ");
+                    // Serial.println(size);
+                    // logOutput((String)"The Plate Number is: " + plate_number);
+                    request->send(200, "text/plain", (String) "Plate Number: " + plate_number + " received. Sending Wiegand ID.");
                   }
                   else
                   {
                     Serial.println("Post did not have a 'number' field.");
-                    wiegandFlag = false;
+                    wiegand_flag = false;
+                    request->send(200, "text/plain", "Post did not have a 'number' field.");
                   }
-                  request->send(200, "text/plain", (String) "Plate Number: " + plateNumber + " received. Sending Wiegand ID.");
                 }
               });
 
@@ -1858,16 +1859,16 @@ void loop()
   }
 
   // Wiegand Routine
-  if (wiegandFlag)
+  if (wiegand_flag)
   {
-    alreadyWorking = true;
-    wiegandFlag = false;
-    String copyNumber = plateNumber;
+    already_working = true;
+    wiegand_flag = false;
+    String copyNumber = plate_number;
     String wiegandID = "";
     int pulse = pulseWidth.toInt();
     int gap = interPulseGap.toInt();
     HTTPClient wieg;
-    wieg.begin((String)databaseURL + "?plate_number=" + copyNumber);
+    wieg.begin((String)database_url + "?plate_number=" + copyNumber);
     int httpCode = wieg.GET();
     if (httpCode > 0)
     {
@@ -1883,6 +1884,7 @@ void loop()
 
     if (wiegandID.substring(0, wiegandID.indexOf(',')) != "-1" && wiegandID.substring((wiegandID.indexOf(',') + 1)) != "-1")
     {
+      std::vector<bool> _array;
       card.update(wiegandID.substring(0, wiegandID.indexOf(',')), wiegandID.substring((wiegandID.indexOf(',') + 1)));
       _array = card.getWiegandBinary();
       Serial.print("Sending Wiegand: ");
@@ -1930,18 +1932,17 @@ void loop()
       //   Serial.print(i);
       // }
       // Serial.println('\n');
-      alreadyWorking = false;
+      already_working = false;
     }
     else
     {
       logOutput((String) "Plate Number: " + copyNumber + " does not have a Wiegand ID.");
-      alreadyWorking = false;
+      already_working = false;
     }
   }
 
-  timerDelta = millis();
-
   // Inductive Loop Routine
+  timerDelta = millis();
   // Initialise UDP 1
   if (Port1_Old != Port1 && Port1 != "Not Set")
   {
