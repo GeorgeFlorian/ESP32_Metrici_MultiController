@@ -330,7 +330,7 @@ String processor(const String &var)
     return Input2_IP;
   else if (var == "PH_Port2")
     return Port2;
-  else if (var == "PH_database_url")
+  else if (var == "PH_databaseURL")
     return database_url;
   else if (var == "PH_Pulse")
     return pulseWidth;
@@ -392,23 +392,33 @@ private:
 public:
   void update(String fCode, String cNumber)
   {
-    while (fCode.length() < 3)
-    {
-      fCode = String(0) + fCode;
-    }
-    while (cNumber.length() < 5)
-    {
-      cNumber = String(0) + cNumber;
-    }
+    // while (fCode.length() < 3)
+    // {
+    //   fCode = String(0) + fCode;
+    // }
+    // while (cNumber.length() < 5)
+    // {
+    //   cNumber = String(0) + cNumber;
+    // }
     s1 = fCode + cNumber;
     calculateFacilityCode(fCode.toInt());
     calculateCardNumber(cNumber.toInt());
     calculateWiegand();
   }
-  //returns a 26 length std::vector<bool>
+  // returns a 26 length std::vector<bool>
   std::vector<bool> getWiegandBinary()
   {
     return wiegandArray;
+  }
+  // returns a 26 length String
+  String getWiegandBinaryInString()
+  {
+    String binary_array = "";
+    for (bool i : wiegandArray)
+    {
+      binary_array += (String)i;
+    }
+    return binary_array;
   }
   // returns an 8 characters long String
   String getCardID()
@@ -468,9 +478,9 @@ void ethernetConfig(String x[])
   int ki = 0;
   while (!eth_connected && ki < 20)
   {
-    Serial.println("Establishing ETHERNET Connection ... ");
-    delay(1000);
     ki++;
+    delay(1000);
+    Serial.println((String) "[" + ki + "] - Establishing ETHERNET Connection ... ");
   }
   if (!eth_connected)
   {
@@ -484,7 +494,7 @@ void ethernetConfig(String x[])
   gateway_STA = ETH.gatewayIP();
   subnet_STA = ETH.subnetMask();
   primaryDNS = ETH.dnsIP();
-  logOutput((String) "IP addres: " + local_IP_STA.toString());
+  logOutput((String) "IP address: " + local_IP_STA.toString());
   logOutput((String) "Gateway: " + gateway_STA.toString());
   logOutput((String) "Subnet: " + subnet_STA.toString());
   logOutput((String) "DNS: " + primaryDNS.toString());
@@ -541,7 +551,7 @@ void wifiConfig(String x[])
   {
     k++;
     delay(1000);
-    logOutput((String) "Attempt " + k + " - Connecting to WiFi..");
+    Serial.println((String) "[" + k + "] - Establishing WiFi Connection ... ");
   }
   if (WiFi.status() != WL_CONNECTED)
   {
@@ -894,10 +904,6 @@ void setup()
   pinMode(INPUT_1, INPUT_PULLUP);
   pinMode(INPUT_2, INPUT_PULLUP);
   pinMode(BUTTON, INPUT_PULLUP);
-  digitalWrite(INPUT_1, HIGH);
-  digitalWrite(INPUT_2, HIGH);
-  digitalWrite(BUTTON, HIGH);
-  delay(1000);
 
   int q = 0;
   if (digitalRead(BUTTON) == LOW)
@@ -1789,6 +1795,10 @@ void setup()
     logOutput(WiFi.mode(WIFI_AP) ? "Controller went in AP Mode !" : "Controller couldn't go in AP_MODE. AP_STA_MODE will start.");
     startWiFiAP();
   }
+  // for debugging Wiegand
+  // wiegand_flag = true;
+  // plate_number = "B059811";
+  // database_url = "https://dev2.metrici.ro/io/lpr/get_wiegand_id.php";
 }
 
 String Port1_Old = "";
@@ -1859,6 +1869,7 @@ void loop()
   }
 
   // Wiegand Routine
+  
   if (wiegand_flag)
   {
     already_working = true;
@@ -1892,6 +1903,11 @@ void loop()
       {
         Serial.print(i);
       }
+      Serial.print('\n');
+      String binary_wiegand_string = card.getWiegandBinaryInString();
+      logOutput((String)"Binary Wiegand: " + binary_wiegand_string);
+      Serial.print("binary_wiegand_string length: ");
+      Serial.println(binary_wiegand_string.length());
       portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
       portENTER_CRITICAL(&mux);
       for (int i = 0; i < 26; i++)
