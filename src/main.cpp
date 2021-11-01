@@ -38,7 +38,6 @@ static bool eth_connected = false;
 IPAddress local_IP_STA, gateway_STA, subnet_STA, primaryDNS;
 
 // Wiegand variables
-bool activateWeigand = false, activateRFID = false;
 bool wiegand_flag = false;
 bool already_working = false;
 String pulseWidth = "90";
@@ -344,12 +343,21 @@ String processor(const String &var)
 class Wiegand
 {
 private:
-  std::vector<bool> wiegandArray;
+  // Wiegand ID with parity bits
+  std::vector<bool> wiegand26bits = std::vector<bool>(26, false);
+  // Wiegand ID without parity bits
+  std::vector<bool> wiegand24bits = std::vector<bool>(24, false);
+  // Wiegand ID in Open Format style
+  std::vector<bool> wiegand25bits = std::vector<bool>(25, false);
+  // Facility Code in binary
   std::vector<bool> facilityCode = std::vector<bool>(8, false);
+  // Card Number in binary
   std::vector<bool> cardNumber = std::vector<bool>(16, false);
-  String s1;
+  String facility_code = "";
+  String card_number = "";
 
-  void calculateFacilityCode(uint8_t dec)
+  // calculate Facility Code in binary
+  void fCodeToBinary(uint8_t dec)
   {
     for (int8_t i = 7; i >= 0; --i)
     {
@@ -357,7 +365,8 @@ private:
       dec >>= 1;
     }
   }
-  void calculateCardNumber(uint16_t dec)
+  // Calculate Card Number in binary
+  void cNumberToBinary(uint16_t dec)
   {
     for (int8_t i = 15; i >= 0; --i)
     {
@@ -365,65 +374,131 @@ private:
       dec >>= 1;
     }
   }
-  void calculateWiegand()
+  // Calculates two wiegand arrays
+  // 'wiegand26bits' with parity bits and 'wiegand24bits' without them
+  void calculateBothWiegandIDs()
   {
-    wiegandArray.clear();
-    wiegandArray.reserve(facilityCode.size() + cardNumber.size());
-    wiegandArray.insert(wiegandArray.end(), facilityCode.begin(), facilityCode.end());
-    wiegandArray.insert(wiegandArray.end(), cardNumber.begin(), cardNumber.end());
+    wiegand26bits.clear();
+    wiegand24bits.clear();
+    // Add binary Facility Code
+    wiegand26bits.insert(wiegand26bits.end(), facilityCode.begin(), facilityCode.end());
+    // Add binary Card Number
+    wiegand26bits.insert(wiegand26bits.end(), cardNumber.begin(), cardNumber.end());
+    // Add binary Facility Code
+    wiegand24bits.insert(wiegand24bits.end(), facilityCode.begin(), facilityCode.end());
+    // Add binary Card Number
+    wiegand24bits.insert(wiegand24bits.end(), cardNumber.begin(), cardNumber.end());
+    for (bool i : wiegand24bits)
+    {
+      Serial.print(i);
+    }
+    Serial.println();
     // check for parity of the first 12 bits
     bool even = 0;
     for (int i = 0; i < 12; i++)
     {
-      even ^= wiegandArray[i];
+      even ^= wiegand26bits[i];
     }
     // check for parity of the last 12 bits
     bool odd = 1;
     for (int i = 12; i < 24; i++)
     {
-      odd ^= wiegandArray[i];
+      odd ^= wiegand26bits[i];
     }
     // add 0 or 1 as first bit (leading parity bit - even) based on the number of 'ones' in the first 12 bits
-    wiegandArray.insert(wiegandArray.begin(), even);
+    wiegand26bits.insert(wiegand26bits.begin(), even);
     // add 0 or 1 as last bit (trailing parity bit - odd) based on the number of 'ones' in the last 12 bits
-    wiegandArray.push_back(odd);
+    wiegand26bits.push_back(odd);
+  }
+  long convertToDec(String n)
+  {
+    // Serial.print("In convertToDec(), n= ");
+    // Serial.println(n);
+    String num = n;
+    long dec_value = 0;
+
+    // Initializing base value to 1, i.e 2^0
+    int base = 1;
+
+    int len = num.length();
+    for (int i = len - 1; i >= 0; i--)
+    {
+      if (num[i] == '1')
+        dec_value += base;
+      base = base * 2;
+    }
+
+    return dec_value;
   }
 
 public:
-  void update(String fCode, String cNumber)
+  /*
+ facility code in binary
+ card number in binary
+ create 'wiegand' = 'facility code in binary' + 'card number in binary'
+ create 'wiegand_with_parity' = 'wiegand' + 'parity'
+ create 'wiegand_open_format' = 'wiegand' + `0`
+ */
+  void createWiegand(String fCode, String cNumber)
   {
-    // while (fCode.length() < 3)
-    // {
-    //   fCode = String(0) + fCode;
-    // }
-    // while (cNumber.length() < 5)
-    // {
-    //   cNumber = String(0) + cNumber;
-    // }
-    s1 = fCode + cNumber;
-    calculateFacilityCode(fCode.toInt());
-    calculateCardNumber(cNumber.toInt());
-    calculateWiegand();
+    while (fCode.length() < 3)
+    {
+      fCode = String(0) + fCode;
+    }
+    while (cNumber.length() < 5)
+    {
+      cNumber = String(0) + cNumber;
+    }
+    // decimal values
+    facility_code = fCode;
+    card_number = cNumber;
+    fCodeToBinary(facility_code.toInt());
+    cNumberToBinary(card_number.toInt());
+    calculateBothWiegandIDs();
   }
-  // returns a 26 length std::vector<bool>
+  // returns a 26 length Wiegand Binary with parity bits
   std::vector<bool> getWiegandBinary()
   {
-    return wiegandArray;
+    return wiegand26bits;
   }
-  // returns a 26 length String
+  // returns a 26 length Wiegand Binary with parity bits in String format
   String getWiegandBinaryInString()
   {
-    String binary_array = "";
-    for (bool i : wiegandArray)
+    String binary_str = "";
+    for (bool i : wiegand26bits)
     {
-      binary_array += (String)i;
+      binary_str += (String)i;
     }
-    return binary_array;
+    return binary_str;
   }
-  // returns an 8 characters long String
-  String getCardID()
+  // returns wiegand24bits in decimal
+  String getWiegand26b()
   {
-    return s1;
+    String binary_str = "";
+    for (bool i : wiegand24bits)
+    {
+      binary_str += (String)i;
+    }
+    Serial.print("binary_str: ");
+    Serial.println(binary_str);
+    long dec = convertToDec(binary_str);
+
+    return (String)dec;
+  }
+  // returns wiegand id in Open Format
+  String getWiegandOF()
+  {
+    String binary_str = "";
+    for (bool i : wiegand24bits)
+    {
+      binary_str += (String)i;
+    }
+    binary_str += 0;
+    Serial.print("binary_str: ");
+    Serial.println(binary_str);
+    long dec = convertToDec(binary_str);
+
+    return (String)dec;
   }
 
   std::vector<bool> getFacilityCode_vector()
@@ -436,11 +511,19 @@ public:
   }
   uint8_t getFacilityCode_int()
   {
-    return s1.substring(0, 3).toInt();
+    return facility_code.toInt();
+  }
+  String getFacilityCode_string()
+  {
+    return facility_code;
   }
   uint16_t getCardNumber_int()
   {
-    return s1.substring(3, 8).toInt();
+    return card_number.toInt();
+  }
+  String getCardNumber_string()
+  {
+    return card_number;
   }
 } card;
 
@@ -1869,7 +1952,7 @@ void loop()
   }
 
   // Wiegand Routine
-  
+
   if (wiegand_flag)
   {
     already_working = true;
@@ -1883,6 +1966,7 @@ void loop()
     int httpCode = wieg.GET();
     if (httpCode > 0)
     {
+      // GET Facility Code and Card Number
       wiegandID = wieg.getString();
       Serial.println((String) "HTTP Code: " + httpCode);
       Serial.println((String) "Wiegand ID Payload: " + wiegandID);
@@ -1893,10 +1977,13 @@ void loop()
     }
     wieg.end();
 
+    // Check if received wiegandID has facility code and card number
     if (wiegandID.substring(0, wiegandID.indexOf(',')) != "-1" && wiegandID.substring((wiegandID.indexOf(',') + 1)) != "-1")
     {
       std::vector<bool> _array;
-      card.update(wiegandID.substring(0, wiegandID.indexOf(',')), wiegandID.substring((wiegandID.indexOf(',') + 1)));
+      String facility_code = wiegandID.substring(0, wiegandID.indexOf(','));
+      String card_number = wiegandID.substring((wiegandID.indexOf(',') + 1));
+      card.createWiegand(facility_code, card_number);
       _array = card.getWiegandBinary();
       Serial.print("Sending Wiegand: ");
       for (bool i : _array)
@@ -1905,7 +1992,7 @@ void loop()
       }
       Serial.print('\n');
       String binary_wiegand_string = card.getWiegandBinaryInString();
-      logOutput((String)"Binary Wiegand: " + binary_wiegand_string);
+      logOutput((String) "Binary Wiegand: " + binary_wiegand_string);
       Serial.print("binary_wiegand_string length: ");
       Serial.println(binary_wiegand_string.length());
       portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
@@ -1929,25 +2016,29 @@ void loop()
       portEXIT_CRITICAL(&mux);
 
       Serial.println();
-      logOutput((String) "Plate Number: " + copyNumber + " - Wiegand ID: " + card.getCardID());
+      logOutput((String) "Plate Number: " + copyNumber + " - Facility Code: " + card.getFacilityCode_string() + " - Card Number: " + card.getCardNumber_string());
+      logOutput((String) "Plate Number: " + copyNumber + " - Wiegand 26b: " + card.getWiegand26b() + " - Wiegand OF: " + card.getWiegandOF());
 
       Serial.println('\n');
       // DEBUG
-      // Serial.println((String)"Facility Code: " + card.getFacilityCode_int());
+      // Serial.println((String) "Facility Code: " + card.getFacilityCode_int());
       // std::vector<bool> fCode = card.getFacilityCode_vector();
       // Serial.print("Facility Code: ");
-      // for(bool i : fCode) {
+      // for (bool i : fCode)
+      // {
       //   Serial.print(i);
       // }
       // Serial.println('\n');
 
-      // Serial.println((String)"Card Number: " + card.getCardNumber_int());
+      // Serial.println((String) "Card Number: " + card.getCardNumber_int());
       // std::vector<bool> cNumber = card.getCardNumber_vector();
       // Serial.print("Card Number: ");
-      // for(bool i : cNumber) {
+      // for (bool i : cNumber)
+      // {
       //   Serial.print(i);
       // }
       // Serial.println('\n');
+
       already_working = false;
     }
     else
