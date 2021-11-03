@@ -343,12 +343,10 @@ String processor(const String &var)
 class Wiegand
 {
 private:
-  // Wiegand ID with parity bits
+  // Wiegand ID with parity bits (Open Format)
   std::vector<bool> wiegand26bits = std::vector<bool>(26, false);
-  // Wiegand ID without parity bits
+  // Wiegand ID without parity bits (26b format)
   std::vector<bool> wiegand24bits = std::vector<bool>(24, false);
-  // Wiegand ID in Open Format style
-  std::vector<bool> wiegand25bits = std::vector<bool>(25, false);
   // Facility Code in binary
   std::vector<bool> facilityCode = std::vector<bool>(8, false);
   // Card Number in binary
@@ -388,11 +386,7 @@ private:
     wiegand24bits.insert(wiegand24bits.end(), facilityCode.begin(), facilityCode.end());
     // Add binary Card Number
     wiegand24bits.insert(wiegand24bits.end(), cardNumber.begin(), cardNumber.end());
-    for (bool i : wiegand24bits)
-    {
-      Serial.print(i);
-    }
-    Serial.println();
+
     // check for parity of the first 12 bits
     bool even = 0;
     for (int i = 0; i < 12; i++)
@@ -432,13 +426,6 @@ private:
   }
 
 public:
-  /*
- facility code in binary
- card number in binary
- create 'wiegand' = 'facility code in binary' + 'card number in binary'
- create 'wiegand_with_parity' = 'wiegand' + 'parity'
- create 'wiegand_open_format' = 'wiegand' + `0`
- */
   void createWiegand(String fCode, String cNumber)
   {
     while (fCode.length() < 3)
@@ -471,7 +458,7 @@ public:
     }
     return binary_str;
   }
-  // returns wiegand24bits in decimal
+  // returns Wiegand without parity bits
   String getWiegand26b()
   {
     String binary_str = "";
@@ -479,8 +466,6 @@ public:
     {
       binary_str += (String)i;
     }
-    Serial.print("binary_str: ");
-    Serial.println(binary_str);
     long dec = convertToDec(binary_str);
 
     return (String)dec;
@@ -489,13 +474,10 @@ public:
   String getWiegandOF()
   {
     String binary_str = "";
-    for (bool i : wiegand24bits)
+    for (bool i : wiegand26bits)
     {
       binary_str += (String)i;
     }
-    binary_str += 0;
-    Serial.print("binary_str: ");
-    Serial.println(binary_str);
     long dec = convertToDec(binary_str);
 
     return (String)dec;
@@ -509,23 +491,15 @@ public:
   {
     return cardNumber;
   }
-  uint8_t getFacilityCode_int()
-  {
-    return facility_code.toInt();
-  }
   String getFacilityCode_string()
   {
     return facility_code;
-  }
-  uint16_t getCardNumber_int()
-  {
-    return card_number.toInt();
   }
   String getCardNumber_string()
   {
     return card_number;
   }
-} card;
+} wiegand_card;
 
 //------------------------- void ethernetConfig(String x[])
 void ethernetConfig(String x[])
@@ -1879,9 +1853,9 @@ void setup()
     startWiFiAP();
   }
   // for debugging Wiegand
-  // wiegand_flag = true;
-  // plate_number = "B059811";
-  // database_url = "https://dev2.metrici.ro/io/lpr/get_wiegand_id.php";
+  wiegand_flag = true;
+  plate_number = "B059811";
+  database_url = "https://dev2.metrici.ro/io/lpr/get_wiegand_id.php";
 }
 
 String Port1_Old = "";
@@ -1983,18 +1957,21 @@ void loop()
       std::vector<bool> _array;
       String facility_code = wiegandID.substring(0, wiegandID.indexOf(','));
       String card_number = wiegandID.substring((wiegandID.indexOf(',') + 1));
-      card.createWiegand(facility_code, card_number);
-      _array = card.getWiegandBinary();
+
+      wiegand_card.createWiegand(facility_code, card_number);
+
+      _array = wiegand_card.getWiegandBinary();
       Serial.print("Sending Wiegand: ");
       for (bool i : _array)
       {
         Serial.print(i);
       }
       Serial.print('\n');
-      String binary_wiegand_string = card.getWiegandBinaryInString();
-      logOutput((String) "Binary Wiegand: " + binary_wiegand_string);
-      Serial.print("binary_wiegand_string length: ");
-      Serial.println(binary_wiegand_string.length());
+
+      String wiegand26b_string = wiegand_card.getWiegandBinaryInString();
+      logOutput((String) "Sending Wiegand: " + wiegand26b_string);
+      Serial.print("Sending Wiegand length: ");
+      Serial.println(wiegand26b_string.length());
       portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
       portENTER_CRITICAL(&mux);
       for (int i = 0; i < 26; i++)
@@ -2016,28 +1993,27 @@ void loop()
       portEXIT_CRITICAL(&mux);
 
       Serial.println();
-      logOutput((String) "Plate Number: " + copyNumber + " - Facility Code: " + card.getFacilityCode_string() + " - Card Number: " + card.getCardNumber_string());
-      logOutput((String) "Plate Number: " + copyNumber + " - Wiegand 26b: " + card.getWiegand26b() + " - Wiegand OF: " + card.getWiegandOF());
+      logOutput((String) "Plate Number: " + copyNumber + " - Facility Code: " + wiegand_card.getFacilityCode_string() + " - Card Number: " + wiegand_card.getCardNumber_string());
+      logOutput((String) "Plate Number: " + copyNumber + " - Wiegand 26b: " + wiegand_card.getWiegand26b() + " - Wiegand OF: " + wiegand_card.getWiegandOF());
 
       Serial.println('\n');
       // DEBUG
-      // Serial.println((String) "Facility Code: " + card.getFacilityCode_int());
-      // std::vector<bool> fCode = card.getFacilityCode_vector();
-      // Serial.print("Facility Code: ");
-      // for (bool i : fCode)
-      // {
-      //   Serial.print(i);
-      // }
-      // Serial.println('\n');
-
-      // Serial.println((String) "Card Number: " + card.getCardNumber_int());
-      // std::vector<bool> cNumber = card.getCardNumber_vector();
-      // Serial.print("Card Number: ");
-      // for (bool i : cNumber)
-      // {
-      //   Serial.print(i);
-      // }
-      // Serial.println('\n');
+      // Facility Code in binary
+      std::vector<bool> fCode = wiegand_card.getFacilityCode_vector();
+      Serial.print("Facility Code: ");
+      for (bool i : fCode)
+      {
+        Serial.print(i);
+      }
+      Serial.println('\n');
+      // Card Number in binary
+      std::vector<bool> cNumber = wiegand_card.getCardNumber_vector();
+      Serial.print("Card Number: ");
+      for (bool i : cNumber)
+      {
+        Serial.print(i);
+      }
+      Serial.println('\n');
 
       already_working = false;
     }
