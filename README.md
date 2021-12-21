@@ -1,4 +1,5 @@
-# ESP32_Metrici_MultiController
+# MultiController-ESP32
+
 Metrici MultiController with Wiegand Protocol implemented (MMCW) is one of the in-house hardware products developed by Metrici with dedicated firmware.
 
 The MultiController is a multi-purpose tool in different security, traffic management, access contol scenarios and created to meet clients' need for automation and easy access control in customized or familiar protocols/interfaces.
