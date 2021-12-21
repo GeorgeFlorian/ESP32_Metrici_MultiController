@@ -11,3 +11,11 @@ As many companies are using Wiegand based access control with cards for example,
 Benefits of MultiController include - easy integration, use of existing id badges for a single badge solution, individual settings for each employee, manage from any computer on the network, save energy, money and time.
 
 It has a faster and powerful processor with an input voltage of 12/38Vcc.
+### Home Page
+![Home](https://github.com/GeorgeFlorian/MultiController-ESP32/blob/main/raw%20data/1%20-%20Home%20Page.png?raw=true)
+### Network Settings
+![Network](https://github.com/GeorgeFlorian/MultiController-ESP32/blob/main/raw%20data/2%20-%20Network.png?raw=true)
+### Input/Output Settings
+![IO](https://github.com/GeorgeFlorian/MultiController-ESP32/blob/main/raw%20data/3%20-%20IO%20Settings.png?raw=true)
+### Wiegand Settings
+![Wiegand](https://github.com/GeorgeFlorian/MultiController-ESP32/blob/main/raw%20data/4%20-%20Wiegand%20Settings.png?raw=true)
