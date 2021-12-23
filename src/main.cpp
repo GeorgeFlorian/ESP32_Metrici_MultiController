@@ -6,6 +6,9 @@
 #include <ETH.h>
 #include <Update.h>
 #include <esp_wifi.h>
+#include <ezButton.h>
+
+#define DEBOUNCE_TIME 20
 
 #define RELAY1 32
 #define RELAY2 33
@@ -13,6 +16,7 @@
 #define W0 14
 #define W1 13
 #define INPUT_1 15
+ezButton button(INPUT_1);
 #define INPUT_2 17
 
 #define BUTTON 34
@@ -958,7 +962,7 @@ void setup()
   digitalWrite(W1, HIGH);
 
   //setting the pins for Inputs
-  pinMode(INPUT_1, INPUT_PULLUP);
+  // pinMode(INPUT_1, INPUT_PULLUP);
   pinMode(INPUT_2, INPUT_PULLUP);
   pinMode(BUTTON, INPUT_PULLUP);
 
@@ -979,7 +983,7 @@ void setup()
   Serial.print("INPUT_2 (GPIO 17): ");
   Serial.println(digitalRead(INPUT_2));
 
-  delay(100);
+  button.setDebounceTime(DEBOUNCE_TIME);
 
   if (!SPIFFS.begin(true))
   {
@@ -1870,9 +1874,67 @@ bool counting2 = false;
 bool udpStarted1 = false;
 bool udpStarted2 = false;
 
+// int lastButtonState1 = HIGH;
+// unsigned long lastDebounceTime = 0;
+// unsigned long debounceDelay = 50;
+
+unsigned int isPressedCount = 0;
+unsigned int isNotPressedCount = 0;
+unsigned int foo = 0;
+
 void loop()
 {
-  delay(2);
+  delay(1);
+  button.loop();
+
+  if (button.isPressed()){
+    Serial.print("The button is pressed: ");
+    Serial.println(++isPressedCount);
+    wasPressed1 = true;
+  }
+
+  if (button.isReleased())
+  {
+    Serial.print("The button is released: ");
+    Serial.println(++isNotPressedCount);
+  }
+
+  foo = isPressedCount - isNotPressedCount;
+
+  if (abs(foo) == 1 && wasPressed1)
+  {
+    Serial.println("All good !");
+    wasPressed1 = false;
+    
+    logOutput("Trigger1 received.");
+    uint8_t buffer[19] = "statechange,201,1\r";
+    // send packet to server
+    if (Input1_IP.length() != 0 && Input1_IP != "Not Set" && udpStarted1)
+    {
+
+      Serial.print("Time before sending UDP: ");
+      Serial.println(millis());
+      udp1.beginPacket(Input1_IP.c_str(), Port1.toInt());
+      udp1.write(buffer, sizeof(buffer));
+      // delay(30);
+      logOutput(udp1.endPacket() ? "UDP Packet 1 sent" : "WARNING: UDP Packet 1 not sent.");
+      memset(buffer, 0, 19);
+      Serial.print("Time after sending UDP: ");
+      Serial.println(millis());
+    }
+    else
+    {
+      logOutput("ERROR ! Invalid IP Address for INPUT 1. Please enter Metrici Server's IP !");
+    }
+  }
+  else if (abs(foo) > 1 && wasPressed1)
+  {
+    Serial.println("Valeu !!!");
+    isNotPressedCount = 0;
+    isPressedCount = 1;
+    wasPressed1 = false;
+
+  }
 
   // Reboot Check
   if (shouldReboot)
@@ -2026,7 +2088,7 @@ void loop()
 
   // Inductive Loop Routine
   timerDelta = millis();
-  // Initialise UDP 1
+  // Initialise UDP 1 every time the PORT changes
   if (Port1_Old != Port1 && Port1 != "Not Set")
   {
     Port1_Old = Port1;
@@ -2038,41 +2100,60 @@ void loop()
     udpStarted1 = true;
   }
   // check for bounce-back
-  if (digitalRead(INPUT_1) == LOW && counting1 == false)
-  {
-    counting1 = true;
-    timer1 = millis();
-  }
-  // check if INPUT_1 is still LOW after 100 ms
-  if ((timerDelta - timer1) > 500)
-  {
-    counting1 = false;
-    //Send UDP packet if trigger was sent from Input1 only once
-    if (digitalRead(INPUT_1) == LOW && wasPressed1 == false)
-    {
-      wasPressed1 = true;
-      logOutput("Trigger1 received.");
-      uint8_t buffer[19] = "statechange,201,1\r";
-      // send packet to server
-      if (Input1_IP.length() != 0 && Input1_IP != "Not Set" && udpStarted1)
-      {
-        udp1.beginPacket(Input1_IP.c_str(), Port1.toInt());
-        udp1.write(buffer, sizeof(buffer));
-        delay(30);
-        logOutput(udp1.endPacket() ? "UDP Packet 1 sent" : "WARNING: UDP Packet 1 not sent.");
-        memset(buffer, 0, 19);
-      }
-      else
-      {
-        logOutput("ERROR ! Invalid IP Address for INPUT 1. Please enter Metrici Server's IP !");
-      }
-    }
-  }
+  // if (digitalRead(INPUT_1) == LOW && counting1 == false)
+  // {
+  //   Serial.print("Time in bounce-back check: ");
+  //   Serial.println(millis());
+  //   counting1 = true;
+  //   timer1 = millis();
+  // }
 
-  if (digitalRead(INPUT_1) == HIGH && wasPressed1 == true)
-  {
-    wasPressed1 = false;
-  }
+  // // check if INPUT_1 is still LOW after 100 ms
+  // if ((timerDelta - timer1) > 50 )
+  // {
+  //   Serial.print("TimerDelta: ");
+  //   Serial.println(timerDelta);
+  //   Serial.print("Timer1: ");
+  //   Serial.println(timer1);
+
+  //   Serial.print("Time in first check: ");
+  //   Serial.println(millis());
+  //   counting1 = false;
+  //   //Send UDP packet if trigger was sent from Input1 only once
+  //   if (digitalRead(INPUT_1) == LOW && wasPressed1 == false)
+  //   {
+  //     Serial.print("Time in second check: ");
+  //     Serial.println(millis());
+  //     wasPressed1 = true;
+  //     // logOutput("Trigger1 received.");
+  //     // uint8_t buffer[19] = "statechange,201,1\r";
+  //     // // send packet to server
+  //     // if (Input1_IP.length() != 0 && Input1_IP != "Not Set" && udpStarted1)
+  //     // {
+
+  //     //   Serial.print("Time before sending UDP: ");
+  //     //   Serial.println(millis());
+  //     //   udp1.beginPacket(Input1_IP.c_str(), Port1.toInt());
+  //     //   udp1.write(buffer, sizeof(buffer));
+  //     //   // delay(30);
+  //     //   logOutput(udp1.endPacket() ? "UDP Packet 1 sent" : "WARNING: UDP Packet 1 not sent.");
+  //     //   memset(buffer, 0, 19);
+  //     //   Serial.print("Time after sending UDP: ");
+  //     //   Serial.println(millis());
+  //     // }
+  //     // else
+  //     // {
+  //     //   logOutput("ERROR ! Invalid IP Address for INPUT 1. Please enter Metrici Server's IP !");
+  //     // }
+  //   }
+  // }
+
+  // if (digitalRead(INPUT_1) == HIGH && wasPressed1 == true)
+  // {
+  //   Serial.print("Time when checking HIGH: ");
+  //   Serial.println(millis());
+  //   wasPressed1 = false;
+  // }
 
   // Initialise UDP 2
   if (Port2_Old != Port2 && Port2 != "Not Set")
