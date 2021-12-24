@@ -16,8 +16,10 @@
 #define W0 14
 #define W1 13
 #define INPUT_1 15
-ezButton button(INPUT_1);
 #define INPUT_2 17
+
+ezButton input_1(INPUT_1);
+ezButton input_2(INPUT_2);
 
 #define BUTTON 34
 
@@ -963,7 +965,7 @@ void setup()
 
   //setting the pins for Inputs
   // pinMode(INPUT_1, INPUT_PULLUP);
-  pinMode(INPUT_2, INPUT_PULLUP);
+  // pinMode(INPUT_2, INPUT_PULLUP);
   pinMode(BUTTON, INPUT_PULLUP);
 
   int q = 0;
@@ -983,7 +985,8 @@ void setup()
   Serial.print("INPUT_2 (GPIO 17): ");
   Serial.println(digitalRead(INPUT_2));
 
-  button.setDebounceTime(DEBOUNCE_TIME);
+  input_1.setDebounceTime(DEBOUNCE_TIME);
+  input_2.setDebounceTime(DEBOUNCE_TIME);
 
   if (!SPIFFS.begin(true))
   {
@@ -1860,7 +1863,7 @@ void setup()
   wiegand_flag = true;
   plate_number = "B059811";
   database_url = "https://dev2.metrici.ro/io/lpr/get_wiegand_id.php";
-}
+} // end of void setup()
 
 String Port1_Old = "";
 String Port2_Old = "";
@@ -1868,73 +1871,260 @@ bool wasPressed1 = false;
 bool wasPressed2 = false;
 unsigned int timer1 = 0;
 unsigned int timer2 = 0;
-unsigned int timerDelta = 0;
-bool counting1 = false;
-bool counting2 = false;
 bool udpStarted1 = false;
 bool udpStarted2 = false;
 
-// int lastButtonState1 = HIGH;
-// unsigned long lastDebounceTime = 0;
-// unsigned long debounceDelay = 50;
+unsigned int isPressedCount1 = 0;
+unsigned int isPressedCount2 = 0;
+unsigned int isNotPressedCount1 = 0;
+unsigned int isNotPressedCount2 = 0;
+unsigned int debounceError1 = 0;
+unsigned int debounceError2 = 0;
 
-unsigned int isPressedCount = 0;
-unsigned int isNotPressedCount = 0;
-unsigned int foo = 0;
-
-void loop()
+void outputRoutine()
 {
-  delay(1);
-  button.loop();
+  currentTimeRelayOne = millis();
+  currentTimeRelayTwo = millis();
 
-  if (button.isPressed()){
+  if (startTimeRelayOne != 0 && !needManualCloseRelayOne)
+  {
+    if ((currentTimeRelayOne - startTimeRelayOne) > (Delay1.toInt() * 1000))
+    {
+      digitalWrite(RELAY1, LOW);
+      status1 = "OFF";
+      logOutput(" Relay 1 closed");
+      startTimeRelayOne = 0;
+    }
+  }
+
+  if (startTimeRelayTwo != 0 && !needManualCloseRelayTwo)
+  {
+    if ((currentTimeRelayTwo - startTimeRelayTwo) > (Delay2.toInt() * 1000))
+    {
+      digitalWrite(RELAY2, LOW);
+      status2 = "OFF";
+      logOutput("Relay 2 closed");
+      startTimeRelayTwo = 0;
+    }
+  }
+}
+
+void wiegandRoutine()
+{
+  already_working = true;
+  wiegand_flag = false;
+  String copyNumber = plate_number;
+  String wiegandID = "";
+  int pulse = pulseWidth.toInt();
+  int gap = interPulseGap.toInt();
+  HTTPClient wieg;
+  wieg.begin((String)database_url + "?plate_number=" + copyNumber);
+  int httpCode = wieg.GET();
+  if (httpCode > 0)
+  {
+    // GET Facility Code and Card Number
+    wiegandID = wieg.getString();
+    Serial.println((String) "HTTP Code: " + httpCode);
+    Serial.println((String) "Wiegand ID Payload: " + wiegandID);
+  }
+  else
+  {
+    logOutput("Error on HTTP request ! Please check if Database URL is correct.");
+  }
+  wieg.end();
+
+  // Check if received wiegandID has facility code and card number
+  if (wiegandID.substring(0, wiegandID.indexOf(',')) != "-1" && wiegandID.substring((wiegandID.indexOf(',') + 1)) != "-1")
+  {
+    std::vector<bool> _array;
+    String facility_code = wiegandID.substring(0, wiegandID.indexOf(','));
+    String card_number = wiegandID.substring((wiegandID.indexOf(',') + 1));
+
+    wiegand_card.createWiegand(facility_code, card_number);
+
+    _array = wiegand_card.getWiegandBinary();
+    Serial.print("Sending Wiegand: ");
+    for (bool i : _array)
+    {
+      Serial.print(i);
+    }
+    Serial.print('\n');
+
+    String wiegand26b_string = wiegand_card.getWiegandBinaryInString();
+    logOutput((String) "Sending Wiegand: " + wiegand26b_string);
+    Serial.print("Sending Wiegand length: ");
+    Serial.println(wiegand26b_string.length());
+    portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+    portENTER_CRITICAL(&mux);
+    for (int i = 0; i < 26; i++)
+    {
+      if (_array[i] == 0)
+      {
+        digitalWrite(W0, LOW);
+        delayMicroseconds(pulse);
+        digitalWrite(W0, HIGH);
+      }
+      else
+      {
+        digitalWrite(W1, LOW);
+        delayMicroseconds(pulse);
+        digitalWrite(W1, HIGH);
+      }
+      delayMicroseconds(gap);
+    }
+    portEXIT_CRITICAL(&mux);
+
+    Serial.println();
+    logOutput((String) "Plate Number: " + copyNumber + " - Facility Code: " + wiegand_card.getFacilityCode_string() + " - Card Number: " + wiegand_card.getCardNumber_string());
+    logOutput((String) "Plate Number: " + copyNumber + " - Wiegand 26b: " + wiegand_card.getWiegand26b() + " - Wiegand OF: " + wiegand_card.getWiegandOF());
+
+    Serial.println('\n');
+    // DEBUG
+    // Facility Code in binary
+    std::vector<bool> fCode = wiegand_card.getFacilityCode_vector();
+    Serial.print("Facility Code: ");
+    for (bool i : fCode)
+    {
+      Serial.print(i);
+    }
+    Serial.println('\n');
+    // Card Number in binary
+    std::vector<bool> cNumber = wiegand_card.getCardNumber_vector();
+    Serial.print("Card Number: ");
+    for (bool i : cNumber)
+    {
+      Serial.print(i);
+    }
+    Serial.println('\n');
+
+    already_working = false;
+  }
+  else
+  {
+    logOutput((String) "Plate Number: " + copyNumber + " does not have a Wiegand ID.");
+    already_working = false;
+  }
+}
+
+void input1Routine()
+{
+  // Initialise UDP 1 every time the PORT changes
+  if (Port1_Old != Port1 && Port1 != "Not Set")
+  {
+    Port1_Old = Port1;
+    Serial.println("New INPUT1 Port: " + Port1_Old);
+    udp1.stop();
+    delay(100);
+    udp1.begin(Port1.toInt());
+    // only for first initialization
+    udpStarted1 = true;
+  }
+
+  // Input 1
+  if (input_1.isPressed())
+  {
     Serial.print("The button is pressed: ");
-    Serial.println(++isPressedCount);
+    Serial.println(++isPressedCount1);
     wasPressed1 = true;
   }
 
-  if (button.isReleased())
+  if (input_1.isReleased())
   {
     Serial.print("The button is released: ");
-    Serial.println(++isNotPressedCount);
+    Serial.println(++isNotPressedCount1);
   }
 
-  foo = isPressedCount - isNotPressedCount;
+  debounceError1 = isPressedCount1 - isNotPressedCount1;
 
-  if (abs(foo) == 1 && wasPressed1)
+  if (abs(debounceError1) == 1 && wasPressed1)
   {
-    Serial.println("All good !");
-    wasPressed1 = false;
-    
     logOutput("Trigger1 received.");
+    wasPressed1 = false;
     uint8_t buffer[19] = "statechange,201,1\r";
     // send packet to server
     if (Input1_IP.length() != 0 && Input1_IP != "Not Set" && udpStarted1)
     {
-
-      Serial.print("Time before sending UDP: ");
-      Serial.println(millis());
       udp1.beginPacket(Input1_IP.c_str(), Port1.toInt());
       udp1.write(buffer, sizeof(buffer));
       // delay(30);
       logOutput(udp1.endPacket() ? "UDP Packet 1 sent" : "WARNING: UDP Packet 1 not sent.");
       memset(buffer, 0, 19);
-      Serial.print("Time after sending UDP: ");
-      Serial.println(millis());
     }
     else
     {
       logOutput("ERROR ! Invalid IP Address for INPUT 1. Please enter Metrici Server's IP !");
     }
   }
-  else if (abs(foo) > 1 && wasPressed1)
+  else if (abs(debounceError1) > 1 && wasPressed1)
   {
-    Serial.println("Valeu !!!");
-    isNotPressedCount = 0;
-    isPressedCount = 1;
+    Serial.println("Debounce error. Resseting dounce counters for Input 1.");
+    isNotPressedCount1 = 0;
+    isPressedCount1 = 1;
     wasPressed1 = false;
-
   }
+}
+
+void input2Routine()
+{
+  // Initialise UDP 2 every time the PORT changes
+  if (Port2_Old != Port2 && Port2 != "Not Set")
+  {
+    Port2_Old = Port2;
+    Serial.println("New INPUT2 Port: " + Port2_Old);
+    udp2.stop();
+    delay(100);
+    udp2.begin(Port2.toInt());
+    // only for first initialization
+    udpStarted2 = true;
+  }
+
+  // Input 2
+  if (input_2.isPressed())
+  {
+    Serial.print("Input 2 was triggered: ");
+    Serial.println(++isPressedCount2);
+    wasPressed2 = true;
+  }
+
+  if (input_2.isReleased())
+  {
+    Serial.print("Input 2 was released ");
+    Serial.println(++isNotPressedCount2);
+  }
+
+  debounceError2 = isPressedCount2 - isNotPressedCount2;
+
+  if (abs(debounceError2) == 1 && wasPressed2)
+  {
+    logOutput("Trigger2 received.");
+    wasPressed2 = false;
+    uint8_t buffer[19] = "statechange,201,1\r";
+    // send packet to server
+    if (Input2_IP.length() != 0 && Input2_IP != "Not Set" && udpStarted2)
+    {
+      udp2.beginPacket(Input2_IP.c_str(), Port2.toInt());
+      udp2.write(buffer, sizeof(buffer));
+      // delay(30);
+      logOutput(udp2.endPacket() ? "UDP Packet 2 sent" : "WARNING: UDP Packet 2 not sent.");
+      memset(buffer, 0, 19);
+    }
+    else
+    {
+      logOutput("ERROR ! Invalid IP Address for INPUT 2. Please enter Metrici Server's IP !");
+    }
+  }
+  else if (abs(debounceError2) > 1 && wasPressed2)
+  {
+    Serial.println("Debounce error. Resseting dounce counters for Input 2.");
+    isNotPressedCount2 = 0;
+    isPressedCount2 = 1;
+    wasPressed2 = false;
+  }
+}
+
+void loop()
+{
+  delay(1);
 
   // Reboot Check
   if (shouldReboot)
@@ -1962,246 +2152,20 @@ void loop()
   }
 
   // Outputs Routine
-  currentTimeRelayOne = millis();
-  currentTimeRelayTwo = millis();
-
-  if (startTimeRelayOne != 0 && !needManualCloseRelayOne)
-  {
-    if ((currentTimeRelayOne - startTimeRelayOne) > (Delay1.toInt() * 1000))
-    {
-      digitalWrite(RELAY1, LOW);
-      status1 = "OFF";
-      logOutput(" Relay 1 closed");
-      startTimeRelayOne = 0;
-    }
-  }
-
-  if (startTimeRelayTwo != 0 && !needManualCloseRelayTwo)
-  {
-    if ((currentTimeRelayTwo - startTimeRelayTwo) > (Delay2.toInt() * 1000))
-    {
-      digitalWrite(RELAY2, LOW);
-      status2 = "OFF";
-      logOutput("Relay 2 closed");
-      startTimeRelayTwo = 0;
-    }
-  }
+  outputRoutine();
 
   // Wiegand Routine
-
   if (wiegand_flag)
   {
-    already_working = true;
-    wiegand_flag = false;
-    String copyNumber = plate_number;
-    String wiegandID = "";
-    int pulse = pulseWidth.toInt();
-    int gap = interPulseGap.toInt();
-    HTTPClient wieg;
-    wieg.begin((String)database_url + "?plate_number=" + copyNumber);
-    int httpCode = wieg.GET();
-    if (httpCode > 0)
-    {
-      // GET Facility Code and Card Number
-      wiegandID = wieg.getString();
-      Serial.println((String) "HTTP Code: " + httpCode);
-      Serial.println((String) "Wiegand ID Payload: " + wiegandID);
-    }
-    else
-    {
-      logOutput("Error on HTTP request ! Please check if Database URL is correct.");
-    }
-    wieg.end();
-
-    // Check if received wiegandID has facility code and card number
-    if (wiegandID.substring(0, wiegandID.indexOf(',')) != "-1" && wiegandID.substring((wiegandID.indexOf(',') + 1)) != "-1")
-    {
-      std::vector<bool> _array;
-      String facility_code = wiegandID.substring(0, wiegandID.indexOf(','));
-      String card_number = wiegandID.substring((wiegandID.indexOf(',') + 1));
-
-      wiegand_card.createWiegand(facility_code, card_number);
-
-      _array = wiegand_card.getWiegandBinary();
-      Serial.print("Sending Wiegand: ");
-      for (bool i : _array)
-      {
-        Serial.print(i);
-      }
-      Serial.print('\n');
-
-      String wiegand26b_string = wiegand_card.getWiegandBinaryInString();
-      logOutput((String) "Sending Wiegand: " + wiegand26b_string);
-      Serial.print("Sending Wiegand length: ");
-      Serial.println(wiegand26b_string.length());
-      portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-      portENTER_CRITICAL(&mux);
-      for (int i = 0; i < 26; i++)
-      {
-        if (_array[i] == 0)
-        {
-          digitalWrite(W0, LOW);
-          delayMicroseconds(pulse);
-          digitalWrite(W0, HIGH);
-        }
-        else
-        {
-          digitalWrite(W1, LOW);
-          delayMicroseconds(pulse);
-          digitalWrite(W1, HIGH);
-        }
-        delayMicroseconds(gap);
-      }
-      portEXIT_CRITICAL(&mux);
-
-      Serial.println();
-      logOutput((String) "Plate Number: " + copyNumber + " - Facility Code: " + wiegand_card.getFacilityCode_string() + " - Card Number: " + wiegand_card.getCardNumber_string());
-      logOutput((String) "Plate Number: " + copyNumber + " - Wiegand 26b: " + wiegand_card.getWiegand26b() + " - Wiegand OF: " + wiegand_card.getWiegandOF());
-
-      Serial.println('\n');
-      // DEBUG
-      // Facility Code in binary
-      std::vector<bool> fCode = wiegand_card.getFacilityCode_vector();
-      Serial.print("Facility Code: ");
-      for (bool i : fCode)
-      {
-        Serial.print(i);
-      }
-      Serial.println('\n');
-      // Card Number in binary
-      std::vector<bool> cNumber = wiegand_card.getCardNumber_vector();
-      Serial.print("Card Number: ");
-      for (bool i : cNumber)
-      {
-        Serial.print(i);
-      }
-      Serial.println('\n');
-
-      already_working = false;
-    }
-    else
-    {
-      logOutput((String) "Plate Number: " + copyNumber + " does not have a Wiegand ID.");
-      already_working = false;
-    }
+    wiegandRoutine();
   }
 
   // Inductive Loop Routine
-  timerDelta = millis();
-  // Initialise UDP 1 every time the PORT changes
-  if (Port1_Old != Port1 && Port1 != "Not Set")
-  {
-    Port1_Old = Port1;
-    Serial.println("New INPUT1 Port: " + Port1_Old);
-    udp1.stop();
-    delay(100);
-    udp1.begin(Port1.toInt());
-    // only for first initialization
-    udpStarted1 = true;
-  }
-  // check for bounce-back
-  // if (digitalRead(INPUT_1) == LOW && counting1 == false)
-  // {
-  //   Serial.print("Time in bounce-back check: ");
-  //   Serial.println(millis());
-  //   counting1 = true;
-  //   timer1 = millis();
-  // }
+  input_1.loop();
+  input_2.loop();
 
-  // // check if INPUT_1 is still LOW after 100 ms
-  // if ((timerDelta - timer1) > 50 )
-  // {
-  //   Serial.print("TimerDelta: ");
-  //   Serial.println(timerDelta);
-  //   Serial.print("Timer1: ");
-  //   Serial.println(timer1);
-
-  //   Serial.print("Time in first check: ");
-  //   Serial.println(millis());
-  //   counting1 = false;
-  //   //Send UDP packet if trigger was sent from Input1 only once
-  //   if (digitalRead(INPUT_1) == LOW && wasPressed1 == false)
-  //   {
-  //     Serial.print("Time in second check: ");
-  //     Serial.println(millis());
-  //     wasPressed1 = true;
-  //     // logOutput("Trigger1 received.");
-  //     // uint8_t buffer[19] = "statechange,201,1\r";
-  //     // // send packet to server
-  //     // if (Input1_IP.length() != 0 && Input1_IP != "Not Set" && udpStarted1)
-  //     // {
-
-  //     //   Serial.print("Time before sending UDP: ");
-  //     //   Serial.println(millis());
-  //     //   udp1.beginPacket(Input1_IP.c_str(), Port1.toInt());
-  //     //   udp1.write(buffer, sizeof(buffer));
-  //     //   // delay(30);
-  //     //   logOutput(udp1.endPacket() ? "UDP Packet 1 sent" : "WARNING: UDP Packet 1 not sent.");
-  //     //   memset(buffer, 0, 19);
-  //     //   Serial.print("Time after sending UDP: ");
-  //     //   Serial.println(millis());
-  //     // }
-  //     // else
-  //     // {
-  //     //   logOutput("ERROR ! Invalid IP Address for INPUT 1. Please enter Metrici Server's IP !");
-  //     // }
-  //   }
-  // }
-
-  // if (digitalRead(INPUT_1) == HIGH && wasPressed1 == true)
-  // {
-  //   Serial.print("Time when checking HIGH: ");
-  //   Serial.println(millis());
-  //   wasPressed1 = false;
-  // }
-
-  // Initialise UDP 2
-  if (Port2_Old != Port2 && Port2 != "Not Set")
-  {
-    Port2_Old = Port2;
-    Serial.println("New INPUT2 Port: " + Port2_Old);
-    udp2.stop();
-    delay(100);
-    udp2.begin(Port2.toInt());
-    // only for first initialization
-    udpStarted2 = true;
-  }
-
-  // check for bounce-back
-  if (digitalRead(INPUT_2) == LOW && counting2 == false)
-  {
-    counting2 = true;
-    timer2 = millis();
-  }
-  // check if INPUT_2 is still LOW after 100 ms
-  if ((timerDelta - timer2) > 500)
-  {
-    counting2 = false;
-    //Send UDP packet if trigger was sent from Input2 only once
-    if (digitalRead(INPUT_2) == LOW && wasPressed2 == false)
-    {
-      wasPressed2 = true;
-      logOutput("Trigger2 received.");
-      uint8_t buffer[19] = "statechange,201,1\r";
-      // send packet to server
-      if (Input2_IP.length() != 0 && Input2_IP != "Not Set" && udpStarted2)
-      {
-        udp2.beginPacket(Input2_IP.c_str(), Port2.toInt());
-        udp2.write(buffer, sizeof(buffer));
-        delay(30);
-        logOutput(udp2.endPacket() ? "UDP Packet 2 sent" : "WARNING: UDP Packet 2 not sent.");
-        memset(buffer, 0, 19);
-      }
-      else
-      {
-        logOutput("ERROR ! Invalid IP Address for INPUT 2. Please enter Metrici Server's IP !");
-      }
-    }
-  }
-  if (digitalRead(INPUT_2) == HIGH && wasPressed2 == true)
-  {
-    wasPressed2 = false;
-  }
+  input1Routine();
+  input2Routine();
 
   // Serial.print("Heap Size: ");
   // Serial.println(ESP.getHeapSize());
