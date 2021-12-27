@@ -2023,14 +2023,14 @@ void input1Routine()
   // Input 1
   if (input_1.isPressed())
   {
-    Serial.print("The button is pressed: ");
+    Serial.print("Input 1 was triggered: ");
     Serial.println(++isPressedCount1);
     wasPressed1 = true;
   }
 
   if (input_1.isReleased())
   {
-    Serial.print("The button is released: ");
+    Serial.print("Input 1 was released: ");
     Serial.println(++isNotPressedCount1);
   }
 
@@ -2281,7 +2281,7 @@ void loop()
     }
   }
 
-  // testInputRoutine();
+  testInputRoutine();
 
   // Outputs Routine
   outputRoutine();
