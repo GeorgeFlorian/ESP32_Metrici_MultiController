@@ -1190,7 +1190,7 @@ void setup()
                   if (Delay1.toInt() == 0)
                   {
                     needManualCloseRelayOne = true;
-                    logOutput(" Relay 1 will remain open until it is manually closed !");
+                    // logOutput(" Relay 1 will remain open until it is manually closed !");
                   }
                   else
                   {
@@ -1209,7 +1209,7 @@ void setup()
                   if (Delay1.toInt() == 0)
                   {
                     needManualCloseRelayOne = true;
-                    logOutput(" Relay 1 will remain open until it is manually closed !");
+                    // logOutput(" Relay 1 will remain open until it is manually closed !");
                   }
                   else
                   {
@@ -1258,7 +1258,7 @@ void setup()
                   if (Delay2.toInt() == 0)
                   {
                     needManualCloseRelayTwo = true;
-                    logOutput("Relay 2 will remain open until it is manually closed !");
+                    // logOutput("Relay 2 will remain open until it is manually closed !");
                   }
                   else
                   {
@@ -1277,7 +1277,7 @@ void setup()
                   if (Delay2.toInt() == 0)
                   {
                     needManualCloseRelayTwo = true;
-                    logOutput("Relay 2 will remain open until it is manually closed !");
+                    // logOutput("Relay 2 will remain open until it is manually closed !");
                   }
                   else
                   {
@@ -1489,7 +1489,7 @@ void setup()
                   if (Delay1.toInt() == 0)
                   {
                     needManualCloseRelayOne = true;
-                    logOutput(" Relay 1 will remain open until it is manually closed !");
+                    // logOutput(" Relay 1 will remain open until it is manually closed !");
                   }
                   else
                   {
@@ -1518,7 +1518,7 @@ void setup()
                   if (Delay2.toInt() == 0)
                   {
                     needManualCloseRelayTwo = true;
-                    logOutput("Relay 2 will remain open until it is manually closed !");
+                    // logOutput("Relay 2 will remain open until it is manually closed !");
                   }
                   else
                   {
@@ -1860,9 +1860,9 @@ void setup()
     startWiFiAP();
   }
   // for debugging Wiegand
-  wiegand_flag = true;
-  plate_number = "B059811";
-  database_url = "https://dev2.metrici.ro/io/lpr/get_wiegand_id.php";
+  // wiegand_flag = true;
+  // plate_number = "B059811";
+  // database_url = "https://dev2.metrici.ro/io/lpr/get_wiegand_id.php";
 } // end of void setup()
 
 String Port1_Old = "";
@@ -2122,6 +2122,136 @@ void input2Routine()
   }
 }
 
+int randomInt = 0;
+
+void relayOn(String relayNumber)
+{
+  HTTPClient httpTest;
+  httpTest.begin((String) "http://192.168.100.49/relay" + relayNumber + "/on");
+  httpTest.setTimeout(1);
+  int httpCode = httpTest.GET();
+  Serial.println("\n--------------------RELAY ON--------------------");
+  if (httpCode > 0)
+  {
+    Serial.println((String) "HTTP Code (/on): " + httpCode);
+    Serial.println((String) "HTTP Response (/on): " + httpTest.getString());
+  }
+  else
+  {
+    Serial.println((String)"Error at /relay/on: " + httpCode);
+  }
+  httpTest.end();
+}
+
+void relayOff(String relayNumber)
+{
+
+  HTTPClient httpTest;
+  httpTest.begin((String)"http://192.168.100.49/relay" + relayNumber + "/off");
+  httpTest.setTimeout(1);
+  int httpCode = httpTest.GET();
+  Serial.println("\n--------------------RELAY OFF--------------------");
+  if (httpCode > 0)
+  {
+    Serial.println((String) "HTTP Code (/off): " + httpCode);
+    Serial.println((String) "HTTP Response (/off): " + httpTest.getString());
+  }
+  else
+  {
+    Serial.println((String) "Error at /relay/off: " + httpCode);
+  }
+  httpTest.end();
+}
+
+unsigned long deltaTimer = 0;
+unsigned long openMillisR1 = 0;
+unsigned long openMillisR2 = 0;
+unsigned long closeMillisR1 = 0;
+unsigned long closeMillisR2 = 0;
+unsigned long dif1 = 0;
+unsigned long dif2 = 0;
+int stayOnInterval1 = random(1, 5);
+int stayOnInterval2 = random(1, 5);
+int stayOffInterval1 = 0;
+int stayOffInterval2 = 0;
+
+void testInputRoutine() {
+  // Relay 1
+  // Keep relay closed for random amount of time
+  deltaTimer = millis();
+  dif1 = deltaTimer - closeMillisR1;
+  if (openMillisR1 == 0 && dif1 >= stayOffInterval1 * 1000)
+  {
+    // Serial.print("Diff1 Open: ");
+    // Serial.println(dif1);
+    // Serial.print("deltaTimer: ");
+    // Serial.println(deltaTimer);
+    // Serial.print("closeMillisR1: ");
+    // Serial.println(closeMillisR1);
+    // Get open relay timer
+    relayOn("1");
+    openMillisR1 = millis();
+    stayOffInterval1 = random(1, 5);
+  }
+  // Close relay after random interval of time
+  deltaTimer = millis();
+  dif1 = deltaTimer - openMillisR1;
+  if (openMillisR1 != 0 && dif1 >= stayOnInterval1 * 1000)
+  {
+    // Serial.print("Diff1 Close: ");
+    // Serial.println(dif1);
+    // Serial.print("deltaTimer: ");
+    // Serial.println(deltaTimer);
+    // Serial.print("openMillisR1: ");
+    // Serial.println(openMillisR1);
+    // Close relay
+    relayOff("1");
+    // Get close timer
+    closeMillisR1 = millis();
+    // Reset relay timer
+    openMillisR1 = 0;
+    // Generate new random interval
+    stayOnInterval1 = random(1, 5);
+  }
+  // Relay 2
+  // Keep relay closed for random amount of time
+  deltaTimer = millis();
+  dif2 = deltaTimer - closeMillisR2;
+  if (openMillisR2 == 0 && dif2 >= stayOffInterval2 * 1000)
+  {
+    // Serial.print("Diff1 Open: ");
+    // Serial.println(dif1);
+    // Serial.print("deltaTimer: ");
+    // Serial.println(deltaTimer);
+    // Serial.print("closeMillisR1: ");
+    // Serial.println(closeMillisR1);
+    // Get open relay timer
+    relayOn("2");
+    openMillisR2 = millis();
+    stayOffInterval2 = random(1, 5);
+  }
+  // Close relay after random interval of time
+  deltaTimer = millis();
+  dif2 = deltaTimer - openMillisR2;
+  if (openMillisR2 != 0 && dif2 >= stayOnInterval2 * 1000)
+  {
+    // Serial.print("Diff1 Close: ");
+    // Serial.println(dif1);
+    // Serial.print("deltaTimer: ");
+    // Serial.println(deltaTimer);
+    // Serial.print("openMillisR1: ");
+    // Serial.println(openMillisR1);
+    // Close relay
+    relayOff("2");
+    // Get close timer
+    closeMillisR2 = millis();
+    // Reset relay timer
+    openMillisR2 = 0;
+    // Generate new random interval
+    stayOnInterval2 = random(1, 5);
+  }
+}
+
 void loop()
 {
   delay(1);
@@ -2150,6 +2280,8 @@ void loop()
       ethernetConfig(v);
     }
   }
+
+  // testInputRoutine();
 
   // Outputs Routine
   outputRoutine();
