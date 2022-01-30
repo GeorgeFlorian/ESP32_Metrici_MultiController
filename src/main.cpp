@@ -979,11 +979,11 @@ void setup()
     }
   }
 
-  Serial.println("State of Induction PINS: ");
-  Serial.print("INPUT_1 (GPIO 15): ");
-  Serial.println(digitalRead(INPUT_1));
-  Serial.print("INPUT_2 (GPIO 17): ");
-  Serial.println(digitalRead(INPUT_2));
+  // Serial.println("State of Induction PINS: ");
+  // Serial.print("INPUT_1 (GPIO 15): ");
+  // Serial.println(digitalRead(INPUT_1));
+  // Serial.print("INPUT_2 (GPIO 17): ");
+  // Serial.println(digitalRead(INPUT_2));
 
   input_1.setDebounceTime(DEBOUNCE_TIME);
   input_2.setDebounceTime(DEBOUNCE_TIME);
@@ -1865,14 +1865,12 @@ void setup()
   // database_url = "https://dev2.metrici.ro/io/lpr/get_wiegand_id.php";
 } // end of void setup()
 
-String Port1_Old = "";
-String Port2_Old = "";
-bool wasPressed1 = false;
-bool wasPressed2 = false;
-unsigned int timer1 = 0;
-unsigned int timer2 = 0;
-bool udpStarted1 = false;
-bool udpStarted2 = false;
+String p1_old = "";
+String p2_old = "";
+bool was_pressed1 = false;
+bool was_pressed2 = false;
+bool udp_on1 = false;
+bool udp_on2 = false;
 
 unsigned int isPressedCount1 = 0;
 unsigned int isPressedCount2 = 0;
@@ -2009,15 +2007,15 @@ void wiegandRoutine()
 void input1Routine()
 {
   // Initialise UDP 1 every time the PORT changes
-  if (Port1_Old != Port1 && Port1 != "Not Set")
+  if (p1_old != Port1 && Port1 != "Not Set")
   {
-    Port1_Old = Port1;
-    Serial.println("New INPUT1 Port: " + Port1_Old);
+    p1_old = Port1;
+    Serial.println("New INPUT1 Port: " + p1_old);
     udp1.stop();
     delay(100);
     udp1.begin(Port1.toInt());
     // only for first initialization
-    udpStarted1 = true;
+    udp_on1 = true;
   }
 
   // Input 1
@@ -2025,7 +2023,7 @@ void input1Routine()
   {
     Serial.print("Input 1 was triggered: ");
     Serial.println(++isPressedCount1);
-    wasPressed1 = true;
+    was_pressed1 = true;
   }
 
   if (input_1.isReleased())
@@ -2036,13 +2034,13 @@ void input1Routine()
 
   debounceError1 = isPressedCount1 - isNotPressedCount1;
 
-  if (abs(debounceError1) == 1 && wasPressed1)
+  if (abs(debounceError1) == 1 && was_pressed1)
   {
     logOutput("Trigger1 received.");
-    wasPressed1 = false;
+    was_pressed1 = false;
     uint8_t buffer[19] = "statechange,201,1\r";
     // send packet to server
-    if (Input1_IP.length() != 0 && Input1_IP != "Not Set" && udpStarted1)
+    if (Input1_IP.length() != 0 && Input1_IP != "Not Set" && udp_on1)
     {
       udp1.beginPacket(Input1_IP.c_str(), Port1.toInt());
       udp1.write(buffer, sizeof(buffer));
@@ -2055,27 +2053,27 @@ void input1Routine()
       logOutput("ERROR ! Invalid IP Address for INPUT 1. Please enter Metrici Server's IP !");
     }
   }
-  else if (abs(debounceError1) > 1 && wasPressed1)
+  else if (abs(debounceError1) > 1 && was_pressed1)
   {
     Serial.println("Debounce error. Resseting dounce counters for Input 1.");
     isNotPressedCount1 = 0;
     isPressedCount1 = 1;
-    wasPressed1 = false;
+    was_pressed1 = false;
   }
 }
 
 void input2Routine()
 {
   // Initialise UDP 2 every time the PORT changes
-  if (Port2_Old != Port2 && Port2 != "Not Set")
+  if (p2_old != Port2 && Port2 != "Not Set")
   {
-    Port2_Old = Port2;
-    Serial.println("New INPUT2 Port: " + Port2_Old);
+    p2_old = Port2;
+    Serial.println("New INPUT2 Port: " + p2_old);
     udp2.stop();
     delay(100);
     udp2.begin(Port2.toInt());
     // only for first initialization
-    udpStarted2 = true;
+    udp_on2 = true;
   }
 
   // Input 2
@@ -2083,7 +2081,7 @@ void input2Routine()
   {
     Serial.print("Input 2 was triggered: ");
     Serial.println(++isPressedCount2);
-    wasPressed2 = true;
+    was_pressed2 = true;
   }
 
   if (input_2.isReleased())
@@ -2094,13 +2092,13 @@ void input2Routine()
 
   debounceError2 = isPressedCount2 - isNotPressedCount2;
 
-  if (abs(debounceError2) == 1 && wasPressed2)
+  if (abs(debounceError2) == 1 && was_pressed2)
   {
     logOutput("Trigger2 received.");
-    wasPressed2 = false;
+    was_pressed2 = false;
     uint8_t buffer[19] = "statechange,201,1\r";
     // send packet to server
-    if (Input2_IP.length() != 0 && Input2_IP != "Not Set" && udpStarted2)
+    if (Input2_IP.length() != 0 && Input2_IP != "Not Set" && udp_on2)
     {
       udp2.beginPacket(Input2_IP.c_str(), Port2.toInt());
       udp2.write(buffer, sizeof(buffer));
@@ -2113,12 +2111,12 @@ void input2Routine()
       logOutput("ERROR ! Invalid IP Address for INPUT 2. Please enter Metrici Server's IP !");
     }
   }
-  else if (abs(debounceError2) > 1 && wasPressed2)
+  else if (abs(debounceError2) > 1 && was_pressed2)
   {
     Serial.println("Debounce error. Resseting dounce counters for Input 2.");
     isNotPressedCount2 = 0;
     isPressedCount2 = 1;
-    wasPressed2 = false;
+    was_pressed2 = false;
   }
 }
 
@@ -2145,7 +2143,6 @@ void relayOn(String relayNumber)
 
 void relayOff(String relayNumber)
 {
-
   HTTPClient httpTest;
   httpTest.begin((String)"http://192.168.100.49/relay" + relayNumber + "/off");
   httpTest.setTimeout(1);
